@@ -30,7 +30,9 @@ from location import Location
 import csv
 import logging
 import redis
+import re
 from countries import countries
+
 
 class GeonamesImporter(object):
     
@@ -40,8 +42,32 @@ class GeonamesImporter(object):
         @param fileName path to the geonames datafile
         @param redisConn redis connection
         """
-        self.fileName = fileName
+        fileNames = fileName.split(',')
+        self.fileName = fileNames[0]
+        self.adminCodesFileName = fileNames[1] if len(fileNames) > 1 else None
         self.redis = redis.Redis(host = redisHost, port = redisPort)
+        self._adminCodes = {}
+        
+    def _readAdminCodes(self):
+        """
+        Read administrative codes for states and regions
+        """
+
+        if not self.adminCodesFileName:
+            logging.warn("No admin codes file name. You won't have state names etc")
+            return
+
+        try:
+            fp = open(self.adminCodesFileName)
+        except Exception, e:
+            logging.error("could not open file %s for reading: %s" % (self.adminCodesFileName, e))
+            return
+
+        reader = csv.reader(fp, delimiter='\t')
+        for row in reader:
+            
+            self._adminCodes[row[0].strip()] = row[1].strip()
+            
 
     def runImport(self):
         """
@@ -50,6 +76,8 @@ class GeonamesImporter(object):
         US              CA      037                     3694820 89      115     America/Los_Angeles     2009-11-02
 
         """
+
+        self._readAdminCodes()
 
         try:
             fp = open(self.fileName)
@@ -65,14 +93,20 @@ class GeonamesImporter(object):
 
             try:
                 name = row[2]
+                
                 country = row[8]
-                state = row[9]
+                adminCode = '.'.join((country, row[10]))
+                region = re.sub('\\(.+\\)', '', self._adminCodes.get(adminCode, '')).strip()
+                
+                if country == 'US' and not region:
+                    region = row[10]
+
                 lat = float(row[4])
                 lon = float(row[5])
 
                 loc = Location(name = name,
                                 country = country,
-                                state = state,
+                                state = region,
                                 lat = lat,
                                 lon = lon)
 
@@ -81,8 +115,7 @@ class GeonamesImporter(object):
                 
                 
             except Exception, e:
-                logging.error("Could not import line: %s" % e)
-            
+                logging.error("Could not import line %s: %s" % (row, e))
             i += 1
             if i % 1000 == 0:
                 pipe.execute()

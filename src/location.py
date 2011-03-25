@@ -39,10 +39,10 @@ class Location(object):
         self.lon = kwargs.get('lon', None)
         self.name = kwargs.get('name', '').strip()
         self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()
-        self.state = kwargs.get('state', None).strip()
+        self.state = kwargs.get('state', '').strip()
         self.zipcode = kwargs.get('zipcode', '').strip()
-
-        self.key = ':'.join(('loc', self.name, self.country, self.state, self.zipcode))
+        
+        self.key = ':'.join(('loc', self.name, self.country, self.state, self.zipcode)).lower()
 
     def save(self, redisConn):
 
@@ -97,7 +97,6 @@ class Location(object):
         deltaLeft = abs(long(geoKey )- (hashLeft or 0))
 
         selected = right if deltaRight < deltaLeft else left
-
 
         return Location.load(selected[0], redisConn)
 

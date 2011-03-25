@@ -41,16 +41,28 @@ class IPRange(object):
         self.key = '%s:%s' % (self.rangeMin, self.rangeMax)
 
     def save(self, redisConn):
+        """
+        Save an IP range to redis
+        @param redisConn a redis connectino or pipeline
+        """
         
         redisConn.zadd(self._indexKey, '%s@%s' % (self.geoKey, self.key) , self.rangeMax)
         
         
     def __str__(self):
+        """
+        textual representation
+        """
         return "IPRange: %s" % self.__dict__
     
     @staticmethod
     def getLocation(ip, redisConn):
-
+        """
+        Get location object by resolving an IP address
+        @param ip IPv4 address string (e.g. 127.0.0.1)
+        @oaram redisConn redis connection to the database
+        @return a Location object if we can resolve this ip, else None
+        """
 
         ipnum = IPRange.ip2long(ip)
 
@@ -59,7 +71,7 @@ class IPRange(object):
         if not record:
             #not found? k!
             return None
-        
+
         #extract location id
         try:
             geoKey,rng = record[0][0].split('@')
@@ -77,6 +89,9 @@ class IPRange(object):
 
     @staticmethod
     def ip2long(ip):
+        """
+        Convert an IP string to long
+        """
         ip_packed = socket.inet_aton(ip)
         return struct.unpack("!L", ip_packed)[0]
     
