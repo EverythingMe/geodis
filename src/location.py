@@ -38,7 +38,7 @@ class Location(object):
         self.lat = kwargs.get('lat', None)
         self.lon = kwargs.get('lon', None)
         self.name = kwargs.get('name', '').strip()
-        self.country = countries.get( kwargs.get('country', None), '').strip()
+        self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()
         self.state = kwargs.get('state', None).strip()
         self.zipcode = kwargs.get('zipcode', '').strip()
 
@@ -53,7 +53,9 @@ class Location(object):
         
         redisConn.zadd('locations:geohash',  self.key, geohash.encode_uint64(self.lat, self.lon))
 
-
+    def __str__(self):
+        return "Location: %s" % self.__dict__
+    
     @staticmethod
     def load(key, redisConn):
         """
@@ -67,28 +69,35 @@ class Location(object):
         return Location(**d)
 
     @staticmethod
+    def getByLatLon(lat, lon, redisConn):
+        geoKey = geohash.encode_uint64(lat, lon)
+        
+        return Location.getByGeohash(geoKey, redisConn)
+        
+    @staticmethod
     def getByGeohash(geoKey, redisConn):
-
+        
         tx = redisConn.pipeline()
         tx.zrangebyscore('locations:geohash', geoKey, 'inf', 0, 1, True)
         tx.zrangebyscore('locations:geohash', '-inf', geoKey, 0, 1, True)
-        tx.execute()
+        ret = tx.execute()
 
         #find the two closest locations to the left and to the right of us
-        right = tx[0][0] if tx[0] else None
-        left = tx[1][0] if tx[1] else None
+        
+        right = ret[0][0] if ret[0] else None
+        left = ret[1][0] if ret[1] else None
 
-        hashRight = right[1] if right else None
-        hashLeft = left[0] if left else None
+        hashRight = long(right[1]) if right else None
+        hashLeft = long(left[1]) if left else None
 
         if not hashLeft and not hashRight:
             return None
         
-        deltaRight = math.abs(geoKey - (hashRight or 0))
-        deltaLeft = math.abs(geoKey - (hashLeft or 0))
+        deltaRight = abs(long(geoKey) - (hashRight or 0))
+        deltaLeft = abs(long(geoKey )- (hashLeft or 0))
 
         selected = right if deltaRight < deltaLeft else left
-        print "Selected: %s" % selected[0]
+
 
         return Location.load(selected[0], redisConn)
 

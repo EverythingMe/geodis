@@ -24,7 +24,7 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-#Importer for locations from geonames
+#Importer for locations from ip2location.com databases
 
 
 import csv
@@ -62,23 +62,31 @@ class IP2LocationImporter(object):
 
         i = 0
         for row in reader:
-
+            #['53160704', '53160959', 'US', 'UNITED STATES', 'MASSACHUSETTS', 'BEVERLY', '42.5685', '-70.8619', 'GENERAL ELECTRIC COMPANY', 'GE.COM']
             try:
-                rangeMin = row[0]
-                rangeMax = row[1]
-                lat = float(row[7])
-                lon = float(row[8])
-                logging.info("Indexing range %s-%s, %s,%s" % (rangeMin, rangeMax, lat,lon))
+                countryCode = row[3]
+                rangeMin = int(row[0])
+                rangeMax = int(row[1])
+                lat = float(row[6])
+                lon = float(row[7])
 
-                range = IPRange(rangeMin, rangeMin, lat, lon)
+
+                #junk record
+                if countryCode == '-' and (not lat and not lon):
+                    continue
+                    
+                range = IPRange(rangeMin, rangeMax, lat, lon)
                 range.save(pipe)
+                
             except Exception, e:
                 logging.error("Could not save record: %s" % e)
 
             i += 1
-            if i % 1000 == 0:
+            if i % 10000 == 0:
+                logging.info("Dumping pipe. did %d ranges" % i)
                 pipe.execute()
 
+        pipe.execute()
         logging.info("Imported %d locations" % i)
 
         return i

@@ -36,36 +36,43 @@ class IPRange(object):
         self.rangeMax = rangeMax
 
         #encode a numeric geohash key
-        self.geokey = geohash.encode_uint64(lat, lon)
+        self.geoKey = geohash.encode_uint64(lat, lon)
         
         self.key = '%s:%s' % (self.rangeMin, self.rangeMax)
 
     def save(self, redisConn):
         
-        redisconn.zadd(self._indexKey, '%s@%s' % (self.geoKey, self.key) , self.rangeMax)
+        redisConn.zadd(self._indexKey, '%s@%s' % (self.geoKey, self.key) , self.rangeMax)
         
-
+        
+    def __str__(self):
+        return "IPRange: %s" % self.__dict__
+    
     @staticmethod
-    def getLocation(self, ip, redisConn):
+    def getLocation(ip, redisConn):
 
 
-        ipnum = self.ip2long(ip)
+        ipnum = IPRange.ip2long(ip)
 
         #get the location record from redis
-        record = redisConn.zrangebyscore(self._indexKey, ipnum, 'inf', 0, 1)
-
+        record = redisConn.zrangebyscore(IPRange._indexKey, ipnum ,'+inf', 0, 1, True)
         if not record:
             #not found? k!
             return None
-
+        
         #extract location id
         try:
-            geoKey = record[0].partition('@')[0]
+            geoKey,rng = record[0][0].split('@')
+            rngMin, rngMax =  (int(x) for x in rng.split(':'))
         except IndexError:
             return None
 
+        #address not in any range
+        if not rngMin <= ipnum <= rngMax:
+            return None
+
         #load a location by the
-        return Location.getByGeohash(geoKey)
+        return Location.getByGeohash(geoKey, redisConn)
 
 
     @staticmethod

@@ -32,6 +32,9 @@ import sys
 from optparse import OptionParser
 
 from provider.geonames import GeonamesImporter
+from provider.ip2location import IP2LocationImporter
+from iprange import IPRange
+from location import Location
 
 __author__="dvirsky"
 __date__ ="$Mar 25, 2011 4:44:22 PM$"
@@ -47,14 +50,37 @@ def importGeonames(fileName):
         print "Could not import geonames database..."
         sys.exit(1)
 
-    sys.exit(0)
+    
 
 
+def importIP2Location(fileName):
 
+    global redis_host, redis_port
+    importer = IP2LocationImporter(fileName, redis_host, redis_port)
+    if not importer.runImport():
+        print "Could not import geonames database..."
+        sys.exit(1)
+
+    
+def resolveIP(ip):
+    r = redis.Redis(host = redis_host, port = redis_port)
+
+    loc = IPRange.getLocation(ip, r)
+    print loc
+    
+
+def resolveCoords(lat, lon):
+    r = redis.Redis(host = redis_host, port = redis_port)
+    loc = Location.getByLatLon(lat, lon, r)
+    print loc
 
 
 if __name__ == "__main__":
-
+    
+    logging.basicConfig(
+                level = logging.INFO,
+                format='%(asctime)s %(levelname)s in %(module)s.%(funcName)s (%(filename)s:%(lineno)s): %(message)s',
+                )
     #build options parser
     parser = OptionParser(usage="\n\n%prog [--import_geonames | --import_ip2location] --file=FILE", version="%prog 0.1")
 
@@ -62,10 +88,33 @@ if __name__ == "__main__":
                       action='store_true', default=False,
                       help='Import locations from Geonames data dump')
 
+    parser.add_option("-i", "--import_ip2coutnry", dest="import_ip2location",
+                      action='store_true', default=False,
+                      help='Import ip ranges from ip2country.com dumps')
+
     parser.add_option("-f", "--file", dest="import_file",
                   help="Location of the file we want to import", metavar="FILE")
+
+    parser.add_option("-p", "--resolve_ip", dest="resolve_ip", default = None,
+                      help="resolve an ip address to location", metavar="IP_ADDR")
+
+    parser.add_option("-l", "--resolve_latlon", dest="resolve_latlon", default = None,
+                      help="resolve an lat,lon pair into location", metavar="LAT,LON")
     
     (options, args) = parser.parse_args()
 
     if options.import_geonames:
         importGeonames(options.import_file)
+        
+    elif options.import_ip2location:
+        importIP2Location(options.import_file)
+        
+    elif options.resolve_ip:
+        resolveIP(options.resolve_ip)
+        
+    elif options.resolve_latlon:
+        coords = [float(p) for p in options.resolve_latlon.split(',')]
+        resolveCoords(*coords)
+
+    print "Success!"
+    sys.exit(0)
