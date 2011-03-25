@@ -26,13 +26,14 @@
 
 #Importer for locations from geonames
 
-from location import Location
+
 import csv
 import logging
 import redis
-from countries import countries
 
-class GeonamesImporter(object):
+from iprange import IPRange
+
+class IP2LocationImporter(object):
 
     def __init__(self, fileName, redisHost, redisPort):
         """
@@ -46,8 +47,7 @@ class GeonamesImporter(object):
     def runImport(self):
         """
         File Format:
-        5368361 Los Angeles     Los Angeles     Angelopolis,El Pueblo de Nu....     34.05223        -118.24368      P       PPL
-        US              CA      037                     3694820 89      115     America/Los_Angeles     2009-11-02
+        "50331648","50331903","US","UNITED STATES","MASSACHUSETTS","BEVERLY","42.5685","-70.8619"
 
         """
 
@@ -57,5 +57,30 @@ class GeonamesImporter(object):
             logging.error("could not open file %s for reading: %s" % (self.fileName, e))
             return False
 
-        reader = csv.reader(fp, delimiter='\t')
+        reader = csv.reader(fp, delimiter=',', quotechar='"')
         pipe = self.redis.pipeline()
+
+        i = 0
+        for row in reader:
+
+            try:
+                rangeMin = row[0]
+                rangeMax = row[1]
+                lat = float(row[7])
+                lon = float(row[8])
+                logging.info("Indexing range %s-%s, %s,%s" % (rangeMin, rangeMax, lat,lon))
+
+                range = IPRange(rangeMin, rangeMin, lat, lon)
+                range.save(pipe)
+            except Exception, e:
+                logging.error("Could not save record: %s" % e)
+
+            i += 1
+            if i % 1000 == 0:
+                pipe.execute()
+
+        logging.info("Imported %d locations" % i)
+
+        return i
+
+            
