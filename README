@@ -1,1 +1,12 @@
-TODO: Write something here :)
+Geodis - a Redis based geo resolving library
+
+REUIREMENTS:
+* redis-py
+    easy_install redis
+    optionally: easy_install hiredis (binary module that accelerates stuff if it exists)
+
+* python-geohash
+    http://code.google.com/p/python-geohash/
+    can be installed with easy_install python-geohash
+
+
