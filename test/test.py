@@ -1,5 +1,3 @@
-# Copyright 2010 (c) doit9.com
-# Copying and/or distribution of this file is prohibited.
 
 import unittest
 import redis

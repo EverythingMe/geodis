@@ -1,8 +1,3 @@
-# Copyright 2010 (c) doit9.com
-# Copying and/or distribution of this file is prohibited.
-
-__author__ = "dvirsky"
-__date__ = "$Dec 14, 2010 4:28:57 PM$"
 
 countries = {
     "AD":"Andorra",
