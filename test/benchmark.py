@@ -4,17 +4,17 @@ import sys
 import os
 import redis
 from iprange import IPRange
-from location import Location
+from city import City
 import time
 
 def benchResolveIPs(num):
 
-    ips = ['166.205.138.92', '62.0.18.221',  '69.147.125.65', '188.127.241.156']
+    ips = ['166.205.138.92', '62.0.18.221',  '69.147.125.65', '188.127.241.156', '79.178.26.33']
     r = redis.Redis()
     nips = len(ips)
     for i in xrange(num):
         ip = ips[i % nips]
-        loc = IPRange.getLocation(ip, r)
+        loc = IPRange.getCity(ip, r)
         
     return num
 
@@ -25,7 +25,7 @@ def benchResolveCoords(num):
     ncoords = len(coords)
     for i in xrange(num):
         lat,lon = coords[i % ncoords]
-        loc = Location.getByLatLon(lat,lon, r)
+        loc = City.getByLatLon(lat,lon, r)
         
 
     return num

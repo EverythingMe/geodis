@@ -7,7 +7,7 @@ Geodis is a simple python module that allows you to import locations
 It is able to resolve either lat,lon coordinates into zipcode (in the us), city, region and country (based on the closest match),
 and/or resolve IP addresses into the same location objects.
 
-Geodis is fast - a single thread, signle process python program can resolve about 1500 locations per second on
+Geodis is fast - a single thread, signle process python program can resolve about 2000 ips and 3000 lat,lon pairs
 a desktop machine, when the database is fully loaded with IP ranges and all major cities in the world.
 
 
