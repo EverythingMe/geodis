@@ -1,14 +1,16 @@
 Geodis - a Redis based geo resolving library
 ------------------------------------------------------------------------
 
-Geodis is a simple python module that allows you to import locations
-(currently only cities) and geographical IP ranges into Redis, a fast in-memory NoSQL database.
+Geodis is a simple and fast python module that allows you to convert IP addresses and latitude/longitude
+coordinates into geographical locations such as cities, zipcodes and countries.
 
-It is able to resolve either lat,lon coordinates into zipcode (in the us), city, region and country (based on the closest match),
-and/or resolve IP addresses into the same location objects.
+It currently supports cities worldwide, and zipcode areas in the US (of course each of these includes higher level data such as country).
+But it is written in an extensible way, so that adding a new layer of objects and indexing them is very simple.
 
-Geodis is fast - a single thread, signle process python program can resolve about 2000 ips and 3000 lat,lon pairs
-a desktop machine, when the database is fully loaded with IP ranges and all major cities in the world.
+Geodis is fast, since it uses redis, which as a very fast in memory database, and geohashing to index coordinates.
+
+a single thread, signle process python program can resolve about 2000 ips and 3000 lat/lon pairs per second on
+a regular desktop machine, when the database is fully loaded with IP ranges, zipcodes and all major cities in the world.
 
 
 USAGE
@@ -36,23 +38,32 @@ Geodis can also be used as a command line utility
 
 IMPORTING DATA
 ------------------------
-Geodis needs to import its data into redis. In the data folder you will find a list of all cities in the world.
-*IMPORTANT*: IP to location data is not provided, you need to buy an ip resolving database that can resolve ip ranges to lat,lon pairs
-run geodis.py --help for more details
+Geodis needs to import its data into redis.
+In the data folder you will find a list of all cities in the world, and a zipcode database.
+
+    *IMPORTANT*: IP to location data is not provided, you need to buy an ip resolving database that can resolve ip ranges to lat,lon pairs
+
+data is imported using a utility called geodis.py. run ./geodis.py --help for more details on importing it.
 
 
 REUIREMENTS:
 ------------------------
 
 * redis-server
+
     get it at http://redis.io
 
 
 * redis-py
+
     http://github.com/andymccurdy/redis-py
-    install it with easy_install redis
+
+    install it with *easy_install redis*
+
     optionally: run easy_install hiredis (binary module that accelerates stuff if it exists)
 
-* python-geohash
-    http://code.google.com/p/python-geohash/
-    can be installed with easy_install python-geohash
+* geohasher
+
+    A geohashing python module.
+
+    can be installed with *easy_install geohasher*

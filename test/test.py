@@ -43,7 +43,7 @@ class  TestProvidersTestCase(unittest.TestCase):
         self.assertTrue(loc is not None)
         self.assertTrue(loc.country == 'United States')
         self.assertTrue(loc.state == 'CA' or loc.state == 'California')
-
+        
         #resolve by ip
         ip = '4.3.68.1'
 
