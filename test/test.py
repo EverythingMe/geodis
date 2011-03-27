@@ -26,10 +26,12 @@ class  TestProvidersTestCase(unittest.TestCase):
     def test3_resolve(self):
         r = redis.Redis(self.redisHost, self.redisPort)
         #resolve by coords
-        loc = Location.getByLatLon(34.61, -117.82, r)
+        
+        loc = Location.getByLatLon(34.05,-118.24, r)
+        
         self.assertTrue(loc is not None)
         self.assertTrue(loc.country == 'United States')
-        self.assertTrue(loc.state == 'CA')
+        self.assertTrue(loc.state == 'CA' or loc.state == 'California')
 
         #resolve by ip
         ip = '4.3.32.1'
@@ -37,7 +39,7 @@ class  TestProvidersTestCase(unittest.TestCase):
         loc = IPRange.getLocation(ip, r)
         self.assertTrue(loc is not None)
         self.assertTrue(loc.country == 'United States')
-        self.assertTrue(loc.state == 'CA')
+        self.assertTrue(loc.state == 'CA' or loc.state == 'California')
         
 if __name__ == '__main__':
     unittest.main()

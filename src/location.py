@@ -27,6 +27,7 @@
 from countries import countries
 import geohash
 import math
+import struct
 
 class Location(object):
 
@@ -61,10 +62,12 @@ class Location(object):
         """
         a Factory function to load a location from a given location key
         """
-        d = redisConn.hgetall(key)
+        
+        d = redisConn.hgetall(str(key))
+        
         if not d:
             return None
-
+        
         #build a new object based on the loaded dict
         return Location(**d)
 
@@ -73,32 +76,64 @@ class Location(object):
         geoKey = geohash.encode_uint64(lat, lon)
         
         return Location.getByGeohash(geoKey, redisConn)
+
+    @staticmethod
+    def getDistance(geoHash1, geoHash2):
+        """
+        Estimate the distance between 2 geohashes in uint64 format
+        """
+
+        return abs(geoHash1 - geoHash2)
         
+        try:
+            coords1 = geohash.decode_uint64(geoHash1)
+            coords2 = geohash.decode_uint64(geoHash2)
+            print coords1, coords2
+            return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
+                         math.pow(coords1[1] - coords2[1], 2))
+        except Exception, e:
+            print e
+            return None
+
+
+
     @staticmethod
     def getByGeohash(geoKey, redisConn):
         
         tx = redisConn.pipeline()
         tx.zrangebyscore('locations:geohash', geoKey, 'inf', 0, 1, True)
-        tx.zrangebyscore('locations:geohash', '-inf', geoKey, 0, 1, True)
+        tx.zrevrangebyscore('locations:geohash', geoKey, '-inf', 0, 1, True)
         ret = tx.execute()
 
         #find the two closest locations to the left and to the right of us
+        candidates = filter(None, ret[0]) + filter(None, ret[1])
         
-        right = ret[0][0] if ret[0] else None
-        left = ret[1][0] if ret[1] else None
-
-        hashRight = long(right[1]) if right else None
-        hashLeft = long(left[1]) if left else None
-
-        if not hashLeft and not hashRight:
+        closestDist = None
+        selected = None
+        if not candidates :
             return None
+
+        for i in xrange(len(candidates)):
+            
+            gk = (candidates[i][1])
+            #gk = struct.unpack('i', struct.pack('f', candidates [i][1]))[0]
+            
+            
+            dist = Location.getDistance(geoKey, gk)
+            if dist is None:
+                continue
+            
+            
+            if not closestDist or dist < closestDist:
+                closestDist = dist
+                selected = i
+            
+            
+        if selected is None:
+            return None
+
         
-        deltaRight = abs(long(geoKey) - (hashRight or 0))
-        deltaLeft = abs(long(geoKey )- (hashLeft or 0))
-
-        selected = right if deltaRight < deltaLeft else left
-
-        return Location.load(selected[0], redisConn)
+        return Location.load(str(candidates[selected][0]), redisConn)
 
 
         

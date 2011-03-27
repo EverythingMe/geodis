@@ -26,6 +26,7 @@
 import socket, struct
 from location import Location
 import geohash
+import struct
 
 class IPRange(object):
 
@@ -75,6 +76,7 @@ class IPRange(object):
         #extract location id
         try:
             geoKey,rng = record[0][0].split('@')
+            geoKey = int(geoKey)
             rngMin, rngMax =  (int(x) for x in rng.split(':'))
         except IndexError:
             return None
@@ -82,6 +84,7 @@ class IPRange(object):
         #address not in any range
         if not rngMin <= ipnum <= rngMax:
             return None
+        
 
         #load a location by the
         return Location.getByGeohash(geoKey, redisConn)
