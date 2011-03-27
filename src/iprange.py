@@ -28,7 +28,7 @@
 import socket, struct, re
 from city import City
 from zipcode import ZIPCode
-import geohash
+from geohasher import hasher
 import struct
 
 class IPRange(object):
@@ -43,7 +43,7 @@ class IPRange(object):
         self.zipcode = zipcode
 
         #encode a numeric geohash key
-        self.geoKey = geohash.encode(lat, lon)
+        self.geoKey = hasher.encode(lat, lon)
         
         self.key = '%s:%s:%s' % (self.rangeMin, self.rangeMax, self.zipcode)
 
@@ -80,7 +80,7 @@ class IPRange(object):
         try:
             geoKey,rng = record[0][0].split('@')
             
-            lat,lon = geohash.decode(geoKey)
+            lat,lon = hasher.decode(long(geoKey))
             
             rngMin, rngMax, zipcode =  rng.split(':')
             rngMin = int(rngMin)
@@ -128,7 +128,7 @@ class IPRange(object):
         
 
         #load a location by the
-        return City.getByGeohash(geohash.encode_uint64(range.lat, range.lon), redisConn)
+        return City.getByGeohash(hasher.encode(range.lat, range.lon), redisConn)
 
 
     @staticmethod

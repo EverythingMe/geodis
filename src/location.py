@@ -25,7 +25,7 @@
 #or implied, of Do@.
 
 from countries import countries
-import geohash
+from geohasher import hasher
 import math
 
 
@@ -69,7 +69,7 @@ class Location(object):
         Save the key of the object into the goehash index for this object type
         """
 
-        redisConn.zadd(self.getGeohashIndexKey(), self.getId(), geohash.encode_uint64(self.lat, self.lon))
+        redisConn.zadd(self.getGeohashIndexKey(), self.getId(), hasher.encode(self.lat, self.lon))
 
 
     def __str__(self):
@@ -93,7 +93,7 @@ class Location(object):
     @classmethod
     def getByLatLon(cls, lat, lon, redisConn):
 
-        geoKey = geohash.encode_uint64(lat, lon)
+        geoKey = hasher.encode(lat, lon)
         
         return cls.getByGeohash(geoKey, redisConn)
 
@@ -103,17 +103,16 @@ class Location(object):
         Estimate the distance between 2 geohashes in uint64 format
         """
 
-        return abs(geoHash1 - geoHash2)
+#        return abs(geoHash1 - geoHash2)
         
-#        try:
-#            coords1 = geohash.decode_uint64(geoHash1)
-#            coords2 = geohash.decode_uint64(geoHash2)
-#            print coords1, coords2
-#            return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
-#                         math.pow(coords1[1] - coords2[1], 2))
-#        except Exception, e:
-#            print e
-#            return None
+        try:
+            coords1 = hasher.decode(geoHash1)
+            coords2 = hasher.decode(geoHash2)
+            return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
+                         math.pow(coords1[1] - coords2[1], 2))
+        except Exception, e:
+            print e
+            return None
 
 
 
@@ -136,7 +135,7 @@ class Location(object):
 
         for i in xrange(len(candidates)):
             
-            gk = (candidates[i][1])
+            gk = long(candidates[i][1])
             
             dist = Location.getDistance(geoKey, gk)
             if dist is None:
