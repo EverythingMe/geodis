@@ -33,19 +33,21 @@ from optparse import OptionParser
 
 from provider.geonames import GeonamesImporter
 from provider.ip2location import IP2LocationImporter
+from provider.zipcodes import ZIPImporter
 from iprange import IPRange
-from location import Location
+from city import City
 
 __author__="dvirsky"
 __date__ ="$Mar 25, 2011 4:44:22 PM$"
 
 redis_host = 'localhost'
 redis_port = 6379
+redis_db = 0
 
 def importGeonames(fileName):
     
     global redis_host, redis_port
-    importer = GeonamesImporter(fileName, redis_host, redis_port)
+    importer = GeonamesImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport():
         print "Could not import geonames database..."
         sys.exit(1)
@@ -56,7 +58,16 @@ def importGeonames(fileName):
 def importIP2Location(fileName):
 
     global redis_host, redis_port
-    importer = IP2LocationImporter(fileName, redis_host, redis_port)
+    importer = IP2LocationImporter(fileName, redis_host, redis_port, redis_db)
+    if not importer.runImport():
+        print "Could not import geonames database..."
+        sys.exit(1)
+
+
+def importZIPCode(fileName):
+
+    global redis_host, redis_port
+    importer = ZIPImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport():
         print "Could not import geonames database..."
         sys.exit(1)
@@ -65,13 +76,13 @@ def importIP2Location(fileName):
 def resolveIP(ip):
     r = redis.Redis(host = redis_host, port = redis_port)
 
-    loc = IPRange.getLocation(ip, r)
+    loc = IPRange.getCity(ip, r)
     print loc
     
 
 def resolveCoords(lat, lon):
     r = redis.Redis(host = redis_host, port = redis_port)
-    loc = Location.getByLatLon(lat, lon, r)
+    loc = City.getByLatLon(lat, lon, r)
     print loc
 
 
@@ -91,12 +102,16 @@ if __name__ == "__main__":
     parser.add_option("-i", "--import_ip2coutnry", dest="import_ip2location",
                       action='store_true', default=False,
                       help='Import ip ranges from ip2country.com dumps')
+    parser.add_option("-z", "--import_zipcodes", dest="import_zipcodes",
+                      action='store_true', default=False,
+                      help='Import zipcodes')
 
     parser.add_option("-f", "--file", dest="import_file",
                   help="Location of the file we want to import", metavar="FILE")
 
     parser.add_option("-p", "--resolve_ip", dest="resolve_ip", default = None,
                       help="resolve an ip address to location", metavar="IP_ADDR")
+
 
     parser.add_option("-l", "--resolve_latlon", dest="resolve_latlon", default = None,
                       help="resolve an lat,lon pair into location", metavar="LAT,LON")
@@ -108,6 +123,9 @@ if __name__ == "__main__":
         
     elif options.import_ip2location:
         importIP2Location(options.import_file)
+
+    elif options.import_zipcodes:
+        importZIPCode(options.import_file)
         
     elif options.resolve_ip:
         resolveIP(options.resolve_ip)

@@ -23,23 +23,29 @@
 #The views and conclusions contained in the software and documentation are those of the
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
-import socket, struct
-from location import Location
+
+
+import socket, struct, re
+from city import City
+from zipcode import ZIPCode
 import geohash
 import struct
 
 class IPRange(object):
 
     _indexKey = 'iprange:locations'
-    def __init__(self, rangeMin, rangeMax, lat, lon):
+    def __init__(self, rangeMin, rangeMax, lat, lon, zipcode = ''):
 
         self.rangeMin = rangeMin
         self.rangeMax = rangeMax
+        self.lat = lat
+        self.lon = lon
+        self.zipcode = zipcode
 
         #encode a numeric geohash key
-        self.geoKey = geohash.encode_uint64(lat, lon)
+        self.geoKey = geohash.encode(lat, lon)
         
-        self.key = '%s:%s' % (self.rangeMin, self.rangeMax)
+        self.key = '%s:%s:%s' % (self.rangeMin, self.rangeMax, self.zipcode)
 
     def save(self, redisConn):
         """
@@ -55,16 +61,13 @@ class IPRange(object):
         textual representation
         """
         return "IPRange: %s" % self.__dict__
-    
-    @staticmethod
-    def getLocation(ip, redisConn):
-        """
-        Get location object by resolving an IP address
-        @param ip IPv4 address string (e.g. 127.0.0.1)
-        @oaram redisConn redis connection to the database
-        @return a Location object if we can resolve this ip, else None
-        """
 
+    @staticmethod
+    def get(ip, redisConn):
+        """
+        Get a range and all its data by ip
+        """
+        
         ipnum = IPRange.ip2long(ip)
 
         #get the location record from redis
@@ -76,8 +79,12 @@ class IPRange(object):
         #extract location id
         try:
             geoKey,rng = record[0][0].split('@')
-            geoKey = int(geoKey)
-            rngMin, rngMax =  (int(x) for x in rng.split(':'))
+            
+            lat,lon = geohash.decode(geoKey)
+            
+            rngMin, rngMax, zipcode =  rng.split(':')
+            rngMin = int(rngMin)
+            rngMax = int(rngMax)
         except IndexError:
             return None
 
@@ -85,9 +92,43 @@ class IPRange(object):
         if not rngMin <= ipnum <= rngMax:
             return None
         
+        return IPRange(rngMin, rngMax, lat, lon, zipcode)
+
+    @staticmethod
+    def getZIP(ip, redisConn):
+        """
+        Get a zipcode location object based on an IP
+        will return None if you are outside the US
+        """
+
+        range = IPRange.get(ip, redisConn)
+        if not range or not re.match('^[0-9]{5}$', range.zipcode):
+            return None
+
+        return ZIPCode.load('ZIPCode:%s' % range.zipcode, redisConn)
+
+
+
+
+
+
+    @staticmethod
+    def getCity(ip, redisConn):
+        """
+        Get location object by resolving an IP address
+        @param ip IPv4 address string (e.g. 127.0.0.1)
+        @oaram redisConn redis connection to the database
+        @return a Location object if we can resolve this ip, else None
+        """
+
+        range = IPRange.get(ip, redisConn)
+        if not range:
+            return None
+
+        
 
         #load a location by the
-        return Location.getByGeohash(geoKey, redisConn)
+        return City.getByGeohash(geohash.encode_uint64(range.lat, range.lon), redisConn)
 
 
     @staticmethod

@@ -24,5 +24,15 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from iprange import IPRange
-from city import City
+import redis
+
+class Importer(object):
+    """
+    Base class for all importer scripts, inits a redis connection and file name
+    """
+    def __init__(self, fileName ,redisHost, redisPort, redisDB):
+
+        self.fileName = fileName
+        self.redis = redis.Redis(host = redisHost, port = redisPort, db = redisDB)
+
+        

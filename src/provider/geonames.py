@@ -26,26 +26,27 @@
 
 #Importer for locations from geonames
 
-from location import Location
+from city import City
 import csv
 import logging
 import redis
 import re
-from countries import countries
+from importer import Importer
 
-
-class GeonamesImporter(object):
+class GeonamesImporter(Importer):
     
-    def __init__(self, fileName, redisHost, redisPort):
+    def __init__(self, fileName, redisHost, redisPort, redisDB = 0):
         """
         Init a geonames cities importer
         @param fileName path to the geonames datafile
         @param redisConn redis connection
         """
+
+        Importer.__init__(self, fileName ,redisHost, redisPort, redisDB)
+
         fileNames = fileName.split(',')
         self.fileName = fileNames[0]
         self.adminCodesFileName = fileNames[1] if len(fileNames) > 1 else None
-        self.redis = redis.Redis(host = redisHost, port = redisPort)
         self._adminCodes = {}
         
     def _readAdminCodes(self):
@@ -93,18 +94,19 @@ class GeonamesImporter(object):
 
             try:
                 name = row[2]
-                
+
                 country = row[8]
                 adminCode = '.'.join((country, row[10]))
                 region = re.sub('\\(.+\\)', '', self._adminCodes.get(adminCode, '')).strip()
-                
-                if country == 'US' and not region:
+
+                #for us states - take only state code not full name
+                if country == 'US':
                     region = row[10]
 
                 lat = float(row[4])
                 lon = float(row[5])
 
-                loc = Location(name = name,
+                loc = City(name = name,
                                 country = country,
                                 state = region,
                                 lat = lat,
@@ -112,13 +114,14 @@ class GeonamesImporter(object):
 
                 loc.save(pipe)
 
-                
+
                 
             except Exception, e:
                 logging.error("Could not import line %s: %s" % (row, e))
             i += 1
             if i % 1000 == 0:
                 pipe.execute()
+        pipe.execute()
 
         logging.info("Imported %d locations" % i)
 

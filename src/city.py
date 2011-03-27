@@ -24,5 +24,28 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from iprange import IPRange
-from city import City
+from countries import countries
+import geohash
+
+from location import Location
+
+class City(Location):
+    """
+    Wrapper for a city location object
+    """
+
+    #what we want to save for a city
+    __spec__ = Location.__spec__ + ['country', 'state']
+
+    #key is identical to what we want to save
+    __keyspec__ = None
+    
+    def __init__(self, **kwargs):
+
+        super(City, self).__init__(**kwargs)
+
+        self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()
+        self.state = kwargs.get('state', '').strip()
+        
+
+        

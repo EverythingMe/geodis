@@ -4,7 +4,7 @@ Geodis - a Redis based geo resolving library
 Geodis is a simple python module that allows you to import locations
 (currently only cities) and geographical IP ranges into Redis, a fast in-memory NoSQL database.
 
-It is able to resolve either lat,lon coordinates into city, region and country (based on the closest match),
+It is able to resolve either lat,lon coordinates into zipcode (in the us), city, region and country (based on the closest match),
 and/or resolve IP addresses into the same location objects.
 
 Geodis is fast - a single thread, signle process python program can resolve about 1500 locations per second on
@@ -17,12 +17,12 @@ USAGE
     >>> import geodis
     >>> conn = redis.Redis()
 
-    #getting a location by lat,lon
-    >>> print geodis.Location.getByLatLon(31.78,35.21, conn)
+    #getting a city by lat,lon
+    >>> print geodis.City.getByLatLon(31.78,35.21, conn)
     Location: {'name': 'West Jerusalem', 'country': 'Israel', 'lon': '35.21961', 'zipcode': '', 'state': 'Jerusalem District', 'lat': '31.78199'}
 
     #getting a location by ip
-    >>> print geodis.IPRange.getLocation('62.219.0.221', conn)
+    >>> print geodis.IPRange.getCity('62.219.0.221', conn)
     Location: {'name': 'West Jerusalem', 'country': 'Israel', 'lon': '35.21961', 'zipcode': '', 'state': 'Jerusalem District', 'lat': '31.78199'}
 
 

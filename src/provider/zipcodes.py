@@ -24,23 +24,22 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-#Importer for locations from ip2location.com databases
+#Importer for zipcodes.csv file found in /data
 
-
+from zipcode import ZIPCode
+from us_states import code_to_state
 import csv
 import logging
-import redis
 
 from importer import Importer
-from iprange import IPRange
 
-class IP2LocationImporter(Importer):
-
+class ZIPImporter(Importer):
+    
+        
     def runImport(self):
         """
         File Format:
-        "67134976","67135231","US","UNITED STATES","CALIFORNIA","LOS ANGELES","34.045200","-118.284000","90001"
-
+        "00210","Portsmouth","NH","43.005895","-71.013202","-5","1"
         """
 
         try:
@@ -49,45 +48,40 @@ class IP2LocationImporter(Importer):
             logging.error("could not open file %s for reading: %s" % (self.fileName, e))
             return False
 
-        reader = csv.reader(fp, delimiter=',', quotechar='"')
+        reader = csv.reader(fp, delimiter=',', quotechar = '"')
         pipe = self.redis.pipeline()
 
         i = 0
         for row in reader:
-            
+
             try:
-                #parse the row
-                countryCode = row[3]
-                rangeMin = int(row[0])
-                rangeMax = int(row[1])
-                lat = float(row[6])
-                lon = float(row[7])
+                name = row[0]
+                city = row[1]
+                stateCode = row[2]
+                lat = float(row[3])
+                lon = float(row[4])
+                state = code_to_state.get(stateCode, '').title()
+                country = 'US'
 
-                #take the zipcode if possible
-                try:
-                    zipcode = row[8]
-                except:
-                    zipcode = ''
+                loc = ZIPCode(name = name,
+                              city = city,
+                                country = country,
+                                state = state,
+                                lat = lat,
+                                lon = lon)
 
+                loc.save(pipe)
 
-                #junk record
-                if countryCode == '-' and (not lat and not lon):
-                    continue
-                    
-                range = IPRange(rangeMin, rangeMax, lat, lon, zipcode)
-                range.save(pipe)
+                
                 
             except Exception, e:
-                logging.error("Could not save record: %s" % e)
-
+                logging.error("Could not import line %s: %s" % (row, e))
             i += 1
-            if i % 10000 == 0:
-                logging.info("Dumping pipe. did %d ranges" % i)
+            if i % 1000 == 0:
                 pipe.execute()
 
         pipe.execute()
+
         logging.info("Imported %d locations" % i)
 
         return i
-
-            

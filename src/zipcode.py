@@ -24,5 +24,23 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from iprange import IPRange
-from city import City
+from countries import countries
+import geohash
+
+from location import Location
+
+class ZIPCode(Location):
+
+    __spec__ = Location.__spec__ + ['country', 'state', 'city']
+    __keyspec__ = ['name']
+    
+    def __init__(self, **kwargs):
+
+        super(ZIPCode, self).__init__(**kwargs)
+
+        self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()
+        self.state = kwargs.get('state', '').strip()
+        self.city = kwargs.get('city', '').strip()
+        
+
+    

@@ -27,38 +27,56 @@
 from countries import countries
 import geohash
 import math
-import struct
+
 
 class Location(object):
-
-    CITY = 'city'
-    VENUE = 'venue'
-
+    """
+    This is the base class for all location subclasses
+    """
+    
+    __spec__ = ['lat', 'lon', 'name']
+    __keyspec__ = None
+    
     def __init__(self, **kwargs):
-        
+
         self.lat = kwargs.get('lat', None)
         self.lon = kwargs.get('lon', None)
         self.name = kwargs.get('name', '').strip()
-        self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()
-        self.state = kwargs.get('state', '').strip()
-        self.zipcode = kwargs.get('zipcode', '').strip()
         
-        self.key = ':'.join(('loc', self.name, self.country, self.state, self.zipcode)).lower()
+
+    def getId(self):
+
+        return '%s:%s' % (self.__class__.__name__, ':'.join((str(getattr(self, x)) for x in self.__keyspec__ or self.__spec__)))
+
+    @classmethod
+    def getGeohashIndexKey(cls):
+
+        return '%s:geohash' % cls.__name__
 
     def save(self, redisConn):
 
+        
+        #save all properties
+        redisConn.hmset(self.getId(), dict(((k, getattr(self, k)) for k in \
+                                        self.__spec__)))
 
-        redisConn.hmset(self.key, dict(((k, getattr(self, k)) for k in \
-                                        ('lat', 'lon', 'name', 'country', 'state', 'zipcode'))))
+        self._indexGeohash(redisConn)
 
         
-        redisConn.zadd('locations:geohash',  self.key, geohash.encode_uint64(self.lat, self.lon))
+
+    def _indexGeohash(self, redisConn):
+        """
+        Save the key of the object into the goehash index for this object type
+        """
+
+        redisConn.zadd(self.getGeohashIndexKey(), self.getId(), geohash.encode_uint64(self.lat, self.lon))
+
 
     def __str__(self):
-        return "Location: %s" % self.__dict__
+        return "%s: %s" % (self.__class__.__name__, self.__dict__)
     
-    @staticmethod
-    def load(key, redisConn):
+    @classmethod
+    def load(cls, key, redisConn):
         """
         a Factory function to load a location from a given location key
         """
@@ -69,13 +87,15 @@ class Location(object):
             return None
         
         #build a new object based on the loaded dict
-        return Location(**d)
+        return cls(**d)
 
-    @staticmethod
-    def getByLatLon(lat, lon, redisConn):
+
+    @classmethod
+    def getByLatLon(cls, lat, lon, redisConn):
+
         geoKey = geohash.encode_uint64(lat, lon)
         
-        return Location.getByGeohash(geoKey, redisConn)
+        return cls.getByGeohash(geoKey, redisConn)
 
     @staticmethod
     def getDistance(geoHash1, geoHash2):
@@ -85,24 +105,25 @@ class Location(object):
 
         return abs(geoHash1 - geoHash2)
         
-        try:
-            coords1 = geohash.decode_uint64(geoHash1)
-            coords2 = geohash.decode_uint64(geoHash2)
-            print coords1, coords2
-            return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
-                         math.pow(coords1[1] - coords2[1], 2))
-        except Exception, e:
-            print e
-            return None
+#        try:
+#            coords1 = geohash.decode_uint64(geoHash1)
+#            coords2 = geohash.decode_uint64(geoHash2)
+#            print coords1, coords2
+#            return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
+#                         math.pow(coords1[1] - coords2[1], 2))
+#        except Exception, e:
+#            print e
+#            return None
 
 
 
-    @staticmethod
-    def getByGeohash(geoKey, redisConn):
-        
+    @classmethod
+    def getByGeohash(cls, geoKey, redisConn):
+
+        key = cls.getGeohashIndexKey()
         tx = redisConn.pipeline()
-        tx.zrangebyscore('locations:geohash', geoKey, 'inf', 0, 1, True)
-        tx.zrevrangebyscore('locations:geohash', geoKey, '-inf', 0, 1, True)
+        tx.zrangebyscore(key, geoKey, 'inf', 0, 1, True)
+        tx.zrevrangebyscore(key, geoKey, '-inf', 0, 1, True)
         ret = tx.execute()
 
         #find the two closest locations to the left and to the right of us
@@ -116,13 +137,10 @@ class Location(object):
         for i in xrange(len(candidates)):
             
             gk = (candidates[i][1])
-            #gk = struct.unpack('i', struct.pack('f', candidates [i][1]))[0]
-            
             
             dist = Location.getDistance(geoKey, gk)
             if dist is None:
                 continue
-            
             
             if not closestDist or dist < closestDist:
                 closestDist = dist
@@ -133,7 +151,7 @@ class Location(object):
             return None
 
         
-        return Location.load(str(candidates[selected][0]), redisConn)
+        return cls.load(str(candidates[selected][0]), redisConn)
 
 
         
