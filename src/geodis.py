@@ -74,14 +74,14 @@ def importZIPCode(fileName):
 
     
 def resolveIP(ip):
-    r = redis.Redis(host = redis_host, port = redis_port)
+    r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
 
     loc = IPRange.getCity(ip, r)
     print loc
     
 
 def resolveCoords(lat, lon):
-    r = redis.Redis(host = redis_host, port = redis_port)
+    r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
     loc = City.getByLatLon(lat, lon, r)
     print loc
 
