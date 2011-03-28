@@ -25,7 +25,6 @@
 #or implied, of Do@.
 
 from countries import countries
-import geohash
 
 from location import Location
 
