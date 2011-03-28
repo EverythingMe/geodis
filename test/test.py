@@ -14,7 +14,7 @@ class  TestProvidersTestCase(unittest.TestCase):
     def setUp(self):
         self.redisHost = 'localhost'
         self.redisPort = 6379
-        self.redisDB = 0
+        self.redisDB = 8
     
     def test1_ImportGeonames(self):
 

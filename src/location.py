@@ -118,11 +118,15 @@ class Location(object):
 
     @classmethod
     def getByGeohash(cls, geoKey, redisConn):
+        """
+        Get a location (used directly on a subclass only!) according to a geohash key
+        """
+
 
         key = cls.getGeohashIndexKey()
         tx = redisConn.pipeline()
-        tx.zrangebyscore(key, geoKey, 'inf', 0, 1, True)
-        tx.zrevrangebyscore(key, geoKey, '-inf', 0, 1, True)
+        tx.zrangebyscore(key, geoKey, 'inf', 0, 4, True)
+        tx.zrevrangebyscore(key, geoKey, '-inf', 0, 4, True)
         ret = tx.execute()
 
         #find the two closest locations to the left and to the right of us

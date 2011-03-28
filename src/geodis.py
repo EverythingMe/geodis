@@ -42,7 +42,7 @@ __date__ ="$Mar 25, 2011 4:44:22 PM$"
 
 redis_host = 'localhost'
 redis_port = 6379
-redis_db = 0
+redis_db = 8
 
 def importGeonames(fileName):
     
