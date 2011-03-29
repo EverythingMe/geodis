@@ -11,9 +11,9 @@ for i; do
 		-l|--login) LOGIN=$2; shift 2 ;;
 		-p|--password) PASSWORD=$2; shift 2 ;;
 		-g|--package)  PKG=$2; shift 2 ;; 
-		--redis-port)  redis_port=$2; shift 2 ;;
-		--redis-host)  redis_host=$2; shift 2 ;;
-		--redis-db) redis_db=$2; shift 2 ;;
+		--redis-port)  REDIS_PORT=$2; shift 2 ;;
+		--redis-host)  REDIS_HOST=$2; shift 2 ;;
+		--redis-db) REDIS_DB=$2; shift 2 ;;
 	esac
 done
 
