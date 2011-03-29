@@ -36,6 +36,7 @@ usage() {
 TMPDIR=$TEMP/ip2location/$MONTH
 
 mkdir -p $TMPDIR
+rm "$TMPDIR/*"
 cd $(dirname $0)
 ./download.pl -package $PKG -login $LOGIN -password $PASSWORD -output $TMPDIR/$PKG-$MONTH.zip || \
 	die "Failed to download, quitting"
@@ -43,4 +44,4 @@ unzip -d $TMPDIR $TMPDIR/$PKG-$MONTH.zip 'IP*.CSV' || die "Failed to download, q
 
 PKG_FILE="$TMPDIR/IP*.CSV"
 cd ../../src/
-echo ./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
+./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
