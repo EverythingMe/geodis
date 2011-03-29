@@ -46,7 +46,7 @@ redis_db = 8
 
 def importGeonames(fileName):
     
-    global redis_host, redis_port
+    global redis_host, redis_port, redis_db
     importer = GeonamesImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport():
         print "Could not import geonames database..."
@@ -57,16 +57,16 @@ def importGeonames(fileName):
 
 def importIP2Location(fileName):
 
-    global redis_host, redis_port
+    print redis_host, redis_port, redis_db
     importer = IP2LocationImporter(fileName, redis_host, redis_port, redis_db)
-    if not importer.runImport():
+    if not importer.runImport(True):
         print "Could not import geonames database..."
         sys.exit(1)
 
 
 def importZIPCode(fileName):
 
-    global redis_host, redis_port
+    global redis_host, redis_port, redis_db
     importer = ZIPImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport():
         print "Could not import geonames database..."
@@ -74,6 +74,7 @@ def importZIPCode(fileName):
 
     
 def resolveIP(ip):
+    global redis_host, redis_port, redis_db
     r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
 
     loc = IPRange.getCity(ip, r)
@@ -81,6 +82,7 @@ def resolveIP(ip):
     
 
 def resolveCoords(lat, lon):
+    global redis_host, redis_port, redis_db
     r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
     loc = City.getByLatLon(lat, lon, r)
     print loc
@@ -109,15 +111,29 @@ if __name__ == "__main__":
     parser.add_option("-f", "--file", dest="import_file",
                   help="Location of the file we want to import", metavar="FILE")
 
-    parser.add_option("-p", "--resolve_ip", dest="resolve_ip", default = None,
+    parser.add_option("-P", "--resolve_ip", dest="resolve_ip", default = None,
                       help="resolve an ip address to location", metavar="IP_ADDR")
 
 
-    parser.add_option("-l", "--resolve_latlon", dest="resolve_latlon", default = None,
+    parser.add_option("-L", "--resolve_latlon", dest="resolve_latlon", default = None,
                       help="resolve an lat,lon pair into location", metavar="LAT,LON")
-    
-    (options, args) = parser.parse_args()
 
+
+    parser.add_option("-H", "--redis_host", dest="redis_host", default = 'localhost',
+                      help="redis host to use", metavar="HOST")
+
+    parser.add_option("-p", "--redis_port", dest="redis_port", default = 6379,
+                      type="int", help="redis port to use", metavar="PORT")
+
+    parser.add_option("-n", "--redis_database", dest="redis_db", default = 8,
+                      type="int", help="redis database to use (default 8)", metavar="DB_NUM")
+    
+
+    (options, args) = parser.parse_args()
+    redis_host = options.redis_host
+    redis_port = options.redis_port
+    redis_db = options.redis_db
+    
     if options.import_geonames:
         importGeonames(options.import_file)
         

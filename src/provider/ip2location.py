@@ -36,13 +36,18 @@ from iprange import IPRange
 
 class IP2LocationImporter(Importer):
 
-    def runImport(self):
+    def runImport(self, reset = False):
         """
         File Format:
         "67134976","67135231","US","UNITED STATES","CALIFORNIA","LOS ANGELES","34.045200","-118.284000","90001"
 
         """
+        if reset:
+            print "Deleting old ip data..."
+            self.redis.delete(IPRange._indexKey)
 
+        print "Starting import..."
+            
         try:
             fp = open(self.fileName)
         except Exception, e:
