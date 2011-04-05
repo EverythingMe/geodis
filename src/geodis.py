@@ -36,6 +36,7 @@ from provider.ip2location import IP2LocationImporter
 from provider.zipcodes import ZIPImporter
 from iprange import IPRange
 from city import City
+from zipcode import ZIPCode
 
 __author__="dvirsky"
 __date__ ="$Mar 25, 2011 4:44:22 PM$"
@@ -84,7 +85,7 @@ def resolveIP(ip):
 def resolveCoords(lat, lon):
     global redis_host, redis_port, redis_db
     r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
-    loc = City.getByLatLon(lat, lon, r)
+    loc = ZIPCode.getByLatLon(lat, lon, r)
     print loc
 
 
