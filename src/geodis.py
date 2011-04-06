@@ -78,7 +78,7 @@ def resolveIP(ip):
     global redis_host, redis_port, redis_db
     r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
 
-    loc = IPRange.getCity(ip, r)
+    loc = IPRange.getZIP(ip, r)
     print loc
     
 

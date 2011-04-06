@@ -102,6 +102,7 @@ class IPRange(object):
         """
 
         range = IPRange.get(ip, redisConn)
+        
         if not range or not re.match('^[0-9]{5}$', range.zipcode):
             return None
 

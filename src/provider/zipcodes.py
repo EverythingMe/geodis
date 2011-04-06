@@ -60,7 +60,7 @@ class ZIPImporter(Importer):
                 stateCode = row[2]
                 lat = float(row[3])
                 lon = float(row[4])
-                state = code_to_state.get(stateCode, '').title()
+                state = stateCode#code_to_state.get(stateCode, '').title()
                 country = 'US'
 
                 loc = ZIPCode(name = name,
