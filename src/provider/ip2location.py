@@ -51,7 +51,7 @@ class IP2LocationImporter(Importer):
         try:
             fp = open(self.fileName)
         except Exception, e:
-            logging.error("could not open file %s for reading: %s" % (self.fileName, e))
+            logging.error("could not open file %s for reading: %s" ,self.fileName, e)
             return False
 
         reader = csv.reader(fp, delimiter=',', quotechar='"')
@@ -83,15 +83,15 @@ class IP2LocationImporter(Importer):
                 range.save(pipe)
                 
             except Exception, e:
-                logging.error("Could not save record: %s" % e)
+                logging.error("Could not save record: %s" , e)
 
             i += 1
             if i % 10000 == 0:
-                logging.info("Dumping pipe. did %d ranges" % i)
+                logging.info("Dumping pipe. did %d ranges" , i)
                 pipe.execute()
 
         pipe.execute()
-        logging.info("Imported %d locations" % i)
+        logging.info("Imported %d locations" , i)
 
         return i
 

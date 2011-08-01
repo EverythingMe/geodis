@@ -30,16 +30,22 @@ from location import Location
 
 class ZIPCode(Location):
 
-    __spec__ = Location.__spec__ + ['country', 'state', 'city']
+    __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'city', 'continentId', 'countryId', 'stateId', 'cityId']
     __keyspec__ = ['name']
     
     def __init__(self, **kwargs):
 
         super(ZIPCode, self).__init__(**kwargs)
 
+        self.continent = kwargs.get('continent', '').strip()
         self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()
         self.state = kwargs.get('state', '').strip()
         self.city = kwargs.get('city', '').strip()
+        
+        self.continentId = kwargs.get('continentId', 0)
+        self.countryId = kwargs.get('countryId', 0)
+        self.stateId = kwargs.get('stateId', 0)
+        self.cityId = kwargs.get('cityId', 0)
         
 
     

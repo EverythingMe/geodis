@@ -35,94 +35,52 @@ from importer import Importer
 
 class GeonamesImporter(Importer):
     
-    def __init__(self, fileName, redisHost, redisPort, redisDB = 0):
-        """
-        Init a geonames cities importer
-        @param fileName path to the geonames datafile
-        @param redisConn redis connection
-        """
-
-        Importer.__init__(self, fileName ,redisHost, redisPort, redisDB)
-
-        fileNames = fileName.split(',')
-        self.fileName = fileNames[0]
-        self.adminCodesFileName = fileNames[1] if len(fileNames) > 1 else None
-        self._adminCodes = {}
-        
-    def _readAdminCodes(self):
-        """
-        Read administrative codes for states and regions
-        """
-
-        if not self.adminCodesFileName:
-            logging.warn("No admin codes file name. You won't have state names etc")
-            return
-
-        try:
-            fp = open(self.adminCodesFileName)
-        except Exception, e:
-            logging.error("could not open file %s for reading: %s" % (self.adminCodesFileName, e))
-            return
-
-        reader = csv.reader(fp, delimiter='\t')
-        for row in reader:
-            
-            self._adminCodes[row[0].strip()] = row[1].strip()
-            
-
     def runImport(self):
         """
         File Format:
-        5368361 Los Angeles     Los Angeles     Angelopolis,El Pueblo de Nu....     34.05223        -118.24368      P       PPL
-        US              CA      037                     3694820 89      115     America/Los_Angeles     2009-11-02
-
+        continentId    continentName    countryId    countryName    stateId    stateName    cityId    cityName    lat    lon
         """
-
-        self._readAdminCodes()
-
+        
+        
         try:
             fp = open(self.fileName)
         except Exception, e:
-            logging.error("could not open file %s for reading: %s" % (self.fileName, e))
+            logging.error("could not open file %s for reading: %s" ,self.fileName, e)
             return False
-
-        reader = csv.reader(fp, delimiter='\t')
+        
+        self.reset(City)
+        
         pipe = self.redis.pipeline()
-
+        reader = csv.reader(fp, delimiter='\t', quotechar = '"')
+        
         i = 0
+        fails = 0
         for row in reader:
-
             try:
-                name = row[2]
-
-                country = row[8]
-                adminCode = '.'.join((country, row[10]))
-                region = re.sub('\\(.+\\)', '', self._adminCodes.get(adminCode, '')).strip()
-
-                #for us states - take only state code not full name
-                if country == 'US':
-                    region = row[10]
-
-                lat = float(row[4])
-                lon = float(row[5])
-
-                loc = City(name = name,
-                                country = country,
-                                state = region,
-                                lat = lat,
-                                lon = lon)
-
+                loc = City (
+                    continentId =   row[0],
+                    continent =     row[1],
+                    countryId =     row[2],
+                    country =       row[3],
+                    stateId =       row[4],
+                    state =         row[5],
+                    cityId =        row[6],
+                    name =          row[7],
+                    lat =           float(row[8]),
+                    lon =           float(row[9])
+                )
                 loc.save(pipe)
-
-
                 
             except Exception, e:
-                logging.error("Could not import line %s: %s" % (row, e))
+                logging.exception("Could not import line %s: %s" ,row, e)
+                fails+=1
+                return
+            
             i += 1
             if i % 1000 == 0:
                 pipe.execute()
         pipe.execute()
 
-        logging.info("Imported %d locations" % i)
+        logging.info("Imported %d cities, failed %d times" , i, fails)
 
         return True

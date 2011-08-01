@@ -11,9 +11,9 @@ for i; do
 		-l|--login) LOGIN=$2; shift 2 ;;
 		-p|--password) PASSWORD=$2; shift 2 ;;
 		-g|--package)  PKG=$2; shift 2 ;; 
-		--redis-port)  REDIS_PORT=$2; shift 2 ;;
-		--redis-host)  REDIS_HOST=$2; shift 2 ;;
-		--redis-db) REDIS_DB=$2; shift 2 ;;
+		--redis-port)  redis_port=$2; shift 2 ;;
+		--redis-host)  redis_host=$2; shift 2 ;;
+		--redis-db) redis_db=$2; shift 2 ;;
 	esac
 done
 
@@ -36,12 +36,11 @@ usage() {
 TMPDIR=$TEMP/ip2location/$MONTH
 
 mkdir -p $TMPDIR
-rm "$TMPDIR/*"
 cd $(dirname $0)
 ./download.pl -package $PKG -login $LOGIN -password $PASSWORD -output $TMPDIR/$PKG-$MONTH.zip || \
 	die "Failed to download, quitting"
-unzip -o -d $TMPDIR $TMPDIR/$PKG-$MONTH.zip 'IP*.CSV' || die "Failed to download, quitting"
+unzip -d $TMPDIR $TMPDIR/$PKG-$MONTH.zip 'IP*.CSV' || die "Failed to download, quitting"
 
 PKG_FILE="$TMPDIR/IP*.CSV"
 cd ../../src/
-./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
+echo ./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
