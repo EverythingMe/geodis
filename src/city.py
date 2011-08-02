@@ -56,7 +56,7 @@ class City(Location):
         
         
     @classmethod
-    def getByName(cls, name, redisConn, referenceLat = None, referenceLon = None):
+    def getByName(cls, name, redisConn, referenceLat = None, referenceLon = None, countryLimit = None):
         """
         Load a citiy or a list of city by name or alias to the city. for example, name can be New York or NYC
         @return a list of City objects that can be empty
@@ -72,7 +72,8 @@ class City(Location):
                                         cls.getLatLonDistance((y.lat, y.lon), (referenceLat, referenceLon))
                                     ))
         
-        
+        if countryLimit:
+            cities = filter(lambda x: x.country.lower() == countryLimit.lower(), cities)
         return cities
         
 

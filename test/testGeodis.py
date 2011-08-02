@@ -47,7 +47,7 @@ class  TestGeodis(unittest.TestCase):
         
         #resolve by textual search
         
-        locs = City.getByName('springfield', r, 44.0462, -123.022)
+        locs = City.getByName('springfield', r, 44.0462, -123.022, 'united states')
         
         self.assertTrue(len(locs)>0)
         self.assertTrue(locs[0].country == 'United States')
@@ -86,6 +86,6 @@ class  TestGeodis(unittest.TestCase):
         
 if __name__ == '__main__':
     
-    #import sys;sys.argv = ['', 'TestGeodis.test4_resolve']
+    import sys;sys.argv = ['', 'TestGeodis.test4_resolve']
     unittest.main()
 
