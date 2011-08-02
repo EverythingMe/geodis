@@ -26,6 +26,8 @@
 
 from countries import countries
 from location import Location
+from index import TextIndex
+import re
 
 class City(Location):
     """
@@ -33,10 +35,10 @@ class City(Location):
     """
 
     #what we want to save for a city
-    __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'continentId', 'countryId', 'stateId', 'cityId']
+    __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'continentId', 'countryId', 'stateId', 'cityId', 'aliases']
+    __keyspec__ = Location.__spec__ + ['country', 'state' ]
 
-    #key is identical to what we want to save
-    __keyspec__ = None
+    _keys = {'name': TextIndex(('name', 'aliases'), ',') }
     
     def __init__(self, **kwargs):
 
@@ -50,6 +52,28 @@ class City(Location):
         self.countryId = kwargs.get('countryId', 0)
         self.stateId = kwargs.get('stateId', 0)
         self.cityId = kwargs.get('cityId', 0)
+        self.aliases = ",".join(filter(lambda x: re.match('^[a-zA-Z0-9,\\-\'":]+$', x), kwargs.get('aliases', '').split(',')))
+        
+        
+    @classmethod
+    def getByName(cls, name, redisConn, referenceLat = None, referenceLon = None):
+        """
+        Load a citiy or a list of city by name or alias to the city. for example, name can be New York or NYC
+        @return a list of City objects that can be empty
+        """
+        
+        cities = cls.loadByNamedKey('name', name, redisConn)
+        
+        #if no need to sort - just return what we get
+        if len(cities) > 1 and referenceLat and referenceLon:
+            
+            #sort by distance to the user
+            cities.sort(lambda x,y: cmp(cls.getLatLonDistance((x.lat, x.lon), (referenceLat, referenceLon)), 
+                                        cls.getLatLonDistance((y.lat, y.lon), (referenceLat, referenceLon))
+                                    ))
+        
+        
+        return cities
         
 
         

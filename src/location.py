@@ -37,6 +37,9 @@ class Location(object):
     __spec__ = ['lat', 'lon', 'name']
     __keyspec__ = None
     
+    #keys should be named so we can query by the key names
+    _keys = {}
+    
     def __init__(self, **kwargs):
 
         self.lat = kwargs.get('lat', None)
@@ -62,7 +65,8 @@ class Location(object):
 
         self._indexGeohash(redisConn)
 
-        
+        for k in self._keys.values():
+            k.save(self, redisConn)
 
     def _indexGeohash(self, redisConn):
         """
@@ -88,7 +92,25 @@ class Location(object):
         
         #build a new object based on the loaded dict
         return cls(**d)
-
+    
+    @classmethod
+    def loadByNamedKey(cls, keyName, value, redisConn):
+        """
+        Load a class by a named key indexing some if its fields
+        """
+         
+        k = cls._keys[keyName]
+        
+        ids = k.getIds(cls.__name__, value, redisConn)
+        
+        ret = []
+        for id in ids:
+            ret.append(cls.load(id, redisConn))
+            
+            
+        return ret
+    
+    
 
     @classmethod
     def getByLatLon(cls, lat, lon, redisConn):
@@ -108,13 +130,27 @@ class Location(object):
         try:
             coords1 = hasher.decode(geoHash1)
             coords2 = hasher.decode(geoHash2)
-            return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
-                         math.pow(coords1[1] - coords2[1], 2))
+            return Location.getLatLonDistance(coords1, coords2)
+            #return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
+            #math.pow(coords1[1] - coords2[1], 2))
         except Exception, e:
             print e
             return None
 
-
+        
+    @staticmethod
+    def getLatLonDistance(coord1, coord2):
+        
+        R = 6371; # km
+        lat1, lon1 = float(coord1[0]), float(coord1[1])
+        lat2, lon2 = float(coord2[0]), float(coord2[1])
+        
+        x = (lon2-lon1)#* math.cos((lat1+lat2)/2);
+        y = (lat2-lat1);
+        d = math.sqrt(x**2 + y**2)# * R;
+        
+        return d
+        
 
     @classmethod
     def getByGeohash(cls, geoKey, redisConn):

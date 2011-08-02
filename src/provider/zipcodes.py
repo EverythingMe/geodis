@@ -56,7 +56,12 @@ class ZIPImporter(Importer):
         countryId = None
         continentId = None
         for key in self.redis.keys("City:*"):
-            city = dict(zip(City.__spec__, key.split(':')[1:]))
+            try:
+                city = self.redis.hgetall(key)#dict(zip(City.__spec__, key.split(':')[1:]))
+            except Exception, e:
+                logging.error(e)
+                continue
+            
             if city.get('country')=='United States':
                 
                 if not continentId:
@@ -107,8 +112,8 @@ class ZIPImporter(Importer):
 
                 
                 
-            except Exception:
-                logging.error("Could not import line #%d: %s, %s" % (i+1, city, state))
+            except Exception, e:
+                logging.error("Could not import line #%d: %s, %s: %s" % (i+1, city, state, e))
                 fails += 1
                 
             i += 1

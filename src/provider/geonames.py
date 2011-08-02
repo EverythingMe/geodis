@@ -67,7 +67,8 @@ class GeonamesImporter(Importer):
                     cityId =        row[6],
                     name =          row[7],
                     lat =           float(row[8]),
-                    lon =           float(row[9])
+                    lon =           float(row[9]),
+                    aliases =       row[10]
                 )
                 loc.save(pipe)
                 
@@ -82,5 +83,5 @@ class GeonamesImporter(Importer):
         pipe.execute()
 
         logging.info("Imported %d cities, failed %d times" , i, fails)
-
+        print "Finished!"
         return True
