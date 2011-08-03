@@ -3,12 +3,14 @@ Created on Aug 1, 2011
 
 @author: dvirsky
 '''
+import string
 
 class TextIndex(object):
     '''
     classdocs
     '''
-
+    
+    trantab = string.maketrans("-_", "  ")
 
     def __init__(self, fields, delimiter = ' '):
         '''
@@ -24,7 +26,7 @@ class TextIndex(object):
         
     def normalizeString(self, str_):
         
-        return str_.translate(None, "\"'\\`'[]{}(),./?:)(*&^%$#@!=_-")
+        return str_.translate(self.trantab, "\"'\\`'[]{}(),./?:)(*&^%$#@!=")
     
     def save(self, obj, redisConn):
         
