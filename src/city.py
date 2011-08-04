@@ -52,7 +52,7 @@ class City(Location):
         self.countryId = kwargs.get('countryId', 0)
         self.stateId = kwargs.get('stateId', 0)
         self.cityId = kwargs.get('cityId', 0)
-        self.aliases = ",".join(filter(lambda x: re.match('^[a-zA-Z0-9,\\-\'":]+$', x), kwargs.get('aliases', '').split(',')))
+        self.aliases = ",".join(filter(lambda x: re.match('^[a-zA-Z0-9,\\-\'": ]+$', x), kwargs.get('aliases', '').split(',')))
         
         
     @classmethod
