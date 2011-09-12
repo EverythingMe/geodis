@@ -40,7 +40,10 @@ class TextIndex(object):
         
     def getIds(self, className, value, redisConn):
         
-        k = self.getKey(className, self.normalizeString(value.lower().strip()))
+        value = self.normalizeString(value.lower().strip())
+        if not value:
+            return []
+        k = self.getKey(className, value)
         
         return redisConn.smembers(k)
     

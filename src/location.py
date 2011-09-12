@@ -172,7 +172,7 @@ class Location(object):
         selected = None
         if not candidates :
             return None
-
+        
         for i in xrange(len(candidates)):
             
             gk = long(candidates[i][1])
