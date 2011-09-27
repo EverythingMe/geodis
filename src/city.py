@@ -35,7 +35,7 @@ class City(Location):
     """
 
     #what we want to save for a city
-    __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'continentId', 'countryId', 'stateId', 'cityId', 'aliases']
+    __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'continentId', 'countryId', 'stateId', 'cityId', 'aliases', 'population']
     __keyspec__ = Location.__spec__ + ['country', 'state' ]
 
     _keys = {'name': TextIndex(('name', 'aliases'), ',') }
@@ -53,6 +53,7 @@ class City(Location):
         self.stateId = kwargs.get('stateId', 0)
         self.cityId = kwargs.get('cityId', 0)
         self.aliases = ",".join(filter(lambda x: re.match('^[a-zA-Z0-9,\\-\'": ]+$', x), kwargs.get('aliases', '').split(',')))
+        self.population = kwargs.get('population', 0)
         
         
     @classmethod

@@ -68,7 +68,8 @@ class GeonamesImporter(Importer):
                     name =          row[7],
                     lat =           float(row[8]),
                     lon =           float(row[9]),
-                    aliases =       row[10]
+                    aliases =       row[10],
+                    population =    int(row[11])
                 )
                 loc.save(pipe)
                 
