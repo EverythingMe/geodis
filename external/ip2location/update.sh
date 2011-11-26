@@ -27,6 +27,10 @@ usage() {
 	exit 1
 }
 
+depends_on() {
+    which $1 &>/dev/null || die "$1 is missing!"
+}
+
 [ -n "$LOGIN" ] || usage
 [ -n "$PASSWORD" ] || usage
 [ -n "$USER" ] || usage
@@ -35,11 +39,15 @@ usage() {
 [ -z "$TEMP" ] && TEMP=/tmp
 TMPDIR=$TEMP/ip2location/$MONTH
 
+depends_on unzip
+depends_on perl
+# redis and python are kind of obvious, so no point in checking.
+
 mkdir -p $TMPDIR
 cd $(dirname $0)
 ./download.pl -package $PKG -login $LOGIN -password $PASSWORD -output $TMPDIR/$PKG-$MONTH.zip || \
 	die "Failed to download, quitting"
-unzip -d $TMPDIR $TMPDIR/$PKG-$MONTH.zip 'IP*.CSV' || die "Failed to download, quitting"
+unzip -u -o -d $TMPDIR $TMPDIR/$PKG-$MONTH.zip 'IP*.CSV' || die "Failed to download, quitting"
 
 PKG_FILE="$TMPDIR/IP*.CSV"
 cd ../../src/
