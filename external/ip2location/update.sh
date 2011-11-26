@@ -2,7 +2,7 @@
 MONTH=$(date +%m)
 REDIS_HOST="127.0.0.1"
 REDIS_DB=8
-REDIS_PORT=6739
+REDIS_PORT=6379
 
 args=$(getopt -o l:p:g: -l login:,password:,package:,redis-port:,redis-host:,redis-db: -- "$@" )
 eval set -- "$args"
