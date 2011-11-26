@@ -31,6 +31,11 @@ depends_on() {
     which $1 &>/dev/null || die "$1 is missing!"
 }
 
+verify_zip() {
+    [ -f "$1" ] || die "Can't find zip file $1" 
+    unzip -l "$1" >/dev/null || die "zip file $1 is corrupted."
+}
+
 [ -n "$LOGIN" ] || usage
 [ -n "$PASSWORD" ] || usage
 [ -n "$USER" ] || usage
@@ -47,6 +52,7 @@ mkdir -p $TMPDIR
 cd $(dirname $0)
 ./download.pl -package $PKG -login $LOGIN -password $PASSWORD -output $TMPDIR/$PKG-$MONTH.zip || \
 	die "Failed to download, quitting"
+verify_zip $TMPDIR $TMPDIR/$PKG-$MONTH.zip
 unzip -u -o -d $TMPDIR $TMPDIR/$PKG-$MONTH.zip 'IP*.CSV' || die "Failed to download, quitting"
 
 PKG_FILE="$TMPDIR/IP*.CSV"
