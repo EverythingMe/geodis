@@ -73,7 +73,7 @@ if ($opt_package ne "") {
 } else {
 	&print_help;
 	print "[Error] Missing -package command line switch or parameter.\n";
-	exit(2);
+	exit(0);
 }
 
 if ($opt_login ne "") {
@@ -81,7 +81,7 @@ if ($opt_login ne "") {
 } else {
 	&print_help;
 	print "[Error] Missing -login command line switch or parameter.\n";
-	exit(2);
+	exit(0);
 }
 
 if ($opt_password ne "") {
@@ -89,7 +89,7 @@ if ($opt_password ne "") {
 } else {
 	&print_help;
 	print "[Error] Missing -password command line switch or parameter.\n";
-	exit(2);
+	exit(0);
 }
 
 if ($opt_proxy ne "") {
@@ -144,7 +144,7 @@ elsif ($package eq "DB1CIDR") { $filename = "IP2LOCATION-IP-COUNTRY-CIDR.ZIP"; $
 elsif ($package eq "DB1ACL") { $filename = "IP2LOCATION-IP-COUNTRY-ACL.ZIP"; $output = $filename; }
 else {
 	print "[Error] Unknown -package command line parameter.";
-	exit(2);
+	exit(0);
 }
 
 if ($opt_output ne "") {
@@ -183,16 +183,16 @@ sub check_info() {
 		$database_version = $data[2];
 	} elsif ($data[0] eq "EXPIRED") {
 		print "[Error] This download account has been expired since $data[1]. Please visit http://www.ip2location.com to renew the subscription.";
-		exit(1);
+		exit(0);
 	} elsif ($data[0] eq "INVALID") {
 		print "[Error] Invalid account name or password.";
-		exit(1);
+		exit(0);
 	} elsif ($data[0] eq "NOPERMISSION") {
 		print "[Error] This download account could not download required database because of permission issue.";
-		exit(1);
+		exit(0);
 	} else {
 		print "[Error] Unknown issue $message. Please contact support\@ip2location.com.";
-		exit(1);
+		exit(0);
 	}
 }
 
