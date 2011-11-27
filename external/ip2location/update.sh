@@ -51,10 +51,10 @@ depends_on perl
 mkdir -p $TMPDIR
 rm "$TMPDIR/*"
 cd $(dirname $0)
-./download.pl -package $PKG -login $LOGIN -password $PASSWORD -output $TMPDIR/$PKG-$MONTH.zip || \
+./download.pl -package $PKG -login $LOGIN -password $PASSWORD -output "$TMPDIR/$PKG-$MONTH.zip" || \
 	die "Failed to download, quitting"
-verify_zip $TMPDIR $TMPDIR/$PKG-$MONTH.zip
-unzip -u -o -d $TMPDIR $TMPDIR/$PKG-$MONTH.zip 'IP*.CSV' || die "Failed to download, quitting"
+verify_zip "$TMPDIR/$PKG-$MONTH.zip"
+unzip -u -o -d $TMPDIR "$TMPDIR/$PKG-$MONTH.zip" 'IP*.CSV' || die "Failed to download, quitting"
 
 PKG_FILE="$TMPDIR/IP*.CSV"
 cd ../../src/
