@@ -124,4 +124,4 @@ class ZIPImporter(Importer):
 
         logging.info("Imported %d locations, failed %d times" , i, fails)
 
-        return i
+        return True
