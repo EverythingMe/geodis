@@ -57,4 +57,4 @@ unzip -u -o -d $TMPDIR "$TMPDIR/$PKG-$MONTH.zip" 'IP*.CSV' || die "Failed to dow
 
 PKG_FILE="$TMPDIR/IP*.CSV"
 cd ../../src/
-echo ./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
+./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
