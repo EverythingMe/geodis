@@ -55,7 +55,7 @@ class ZIPImporter(Importer):
         features = {}
         countryId = None
         continentId = None
-        for key in self.redis.keys("City:*"):
+        for key in self.redis.sort(City.getGeohashIndexKey()):
             try:
                 city = self.redis.hgetall(key)#dict(zip(City.__spec__, key.split(':')[1:]))
             except Exception, e:
@@ -124,4 +124,4 @@ class ZIPImporter(Importer):
 
         logging.info("Imported %d locations, failed %d times" , i, fails)
 
-        return i
+        return True
