@@ -4,6 +4,7 @@ Created on Aug 1, 2011
 @author: dvirsky
 '''
 import string
+import re
 
 class TextIndex(object):
     '''
@@ -40,10 +41,21 @@ class TextIndex(object):
         
     def getIds(self, className, value, redisConn):
         
-        value = self.normalizeString(value.lower().strip())
-        if not value:
-            return []
-        k = self.getKey(className, value)
+        values = re.split(self.delimiter, self.normalizeString(value.lower().strip()))
         
-        return redisConn.smembers(k)
+        if not values:
+            return []
+        keys = [self.getKey(className, value) for value in values]
+        print keys
+        return redisConn.sinter(keys)
+    
+    
+class IndexableObject(object):
+    
+    _keys_ = {}
+    
+    def save(self, redisConn):
+        
+        for k in self._keys_.values():
+            k.save(self, redisConn)
     

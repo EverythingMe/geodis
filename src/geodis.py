@@ -38,6 +38,8 @@ from iprange import IPRange
 from city import City
 from zipcode import ZIPCode
 
+import us_states
+
 __author__="dvirsky"
 __date__ ="$Mar 25, 2011 4:44:22 PM$"
 

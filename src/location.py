@@ -78,6 +78,9 @@ class Location(object):
 
     def __str__(self):
         return "%s: %s" % (self.__class__.__name__, self.__dict__)
+
+    def __repr__(self):
+        return "%s: %s" % (self.__class__.__name__, self.__dict__)
     
     @classmethod
     def load(cls, key, redisConn):
@@ -110,11 +113,20 @@ class Location(object):
             
         return ret
     
-    
+    @classmethod
+    def getByKey(cls, redisConn, **kwargs):
+        """
+        Load an object by combining data from kwargs to create the unique key for this object
+        useful for loading ZIP codes with only the known zip
+        """
+        key = '%s:%s' % (cls.__name__, ':'.join((str(kwargs.get(x)) for x in cls.__keyspec__ or cls.__spec__)))
+        
+        return cls.load(key, redisConn)
+
 
     @classmethod
     def getByLatLon(cls, lat, lon, redisConn):
-
+        
         geoKey = hasher.encode(lat, lon)
         
         return cls.getByGeohash(geoKey, redisConn)
