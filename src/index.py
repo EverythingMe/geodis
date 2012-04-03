@@ -133,7 +133,7 @@ class GeoboxIndex(object):
         
     def getIds(self, className, refLocation, radius, redisConn):
         
-        
+        pass
     
     
 class IndexableObject(object):

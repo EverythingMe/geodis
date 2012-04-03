@@ -85,3 +85,5 @@ if __name__ == '__main__':
     import redis
     r = redis.Redis()
     c.save(r)
+    c =  City(lat = 40.1143, lon= -74.106, country = "United States", state= "New York", name = "New York")
+    c.save(r)
