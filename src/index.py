@@ -125,7 +125,7 @@ class GeoboxIndex(object):
         for r in self.resolutions:
             
             _hash = (hasher.encode(obj.lat, obj.lon) >> self.BIT_RESOLUTIONS[r]) << self.BIT_RESOLUTIONS[r]
-            print _hash
+            print '%x' % _hash
             p.zadd(self.getKey(obj.__class__.__name__,r), **{obj.getId(): _hash})
             
         p.execute()
@@ -133,7 +133,7 @@ class GeoboxIndex(object):
         
     def getIds(self, className, refLocation, radius, redisConn):
         
-        pass
+        
     
     
 class IndexableObject(object):

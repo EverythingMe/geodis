@@ -86,6 +86,6 @@ class  TestGeodis(unittest.TestCase):
         
 if __name__ == '__main__':
     
-    import sys;sys.argv = ['', 'TestGeodis.test4_resolve']
+    import sys;sys.argv = ['', 'TestGeodis.test1_ImportGeonames']
     unittest.main()
 

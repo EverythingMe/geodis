@@ -79,4 +79,9 @@ class City(Location):
         return cities
         
 
-        
+if __name__ == '__main__':
+    
+    c =  City(lat = 40.7143, lon= -74.006, country = "United States", state= "New York", name = "New York")
+    import redis
+    r = redis.Redis()
+    c.save(r)
