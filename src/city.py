@@ -26,7 +26,7 @@
 
 from countries import countries
 from location import Location
-from index import TextIndex
+from index import TextIndex, GeoboxIndex
 import re
 
 class City(Location):
@@ -38,7 +38,8 @@ class City(Location):
     __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'continentId', 'countryId', 'stateId', 'cityId', 'aliases', 'population']
     __keyspec__ = Location.__spec__ + ['country', 'state' ]
 
-    _keys = {'name': TextIndex(('name', 'aliases'), ',') }
+    _keys = {'name': TextIndex(('name', 'aliases'), ','),
+             'geobox': GeoboxIndex([GeoboxIndex.RES_1KM, GeoboxIndex.RES_4KM, GeoboxIndex.RES_128KM]) }
     
     def __init__(self, **kwargs):
 

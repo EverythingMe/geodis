@@ -93,6 +93,8 @@ def resolveCoords(lat, lon):
 
 if __name__ == "__main__":
     
+    
+    
     logging.basicConfig(
                 level = logging.INFO,
                 format='%(asctime)s %(levelname)s in %(module)s.%(funcName)s (%(filename)s:%(lineno)s): %(message)s',
