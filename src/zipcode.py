@@ -34,7 +34,7 @@ class ZIPCode(Location):
     __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'city', 'continentId', 'countryId', 'stateId', 'cityId']
     __keyspec__ = ['name']
     _keys = {
-             'geobox': GeoboxIndex([GeoboxIndex.RES_1KM, GeoboxIndex.RES_4KM, GeoboxIndex.RES_128KM]) }
+             'geobox': GeoboxIndex('Zip', [GeoboxIndex.RES_1KM, GeoboxIndex.RES_4KM, GeoboxIndex.RES_128KM]) }
     def __init__(self, **kwargs):
 
         super(ZIPCode, self).__init__(**kwargs)

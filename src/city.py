@@ -28,6 +28,8 @@ from countries import countries
 from location import Location
 from index import TextIndex, GeoboxIndex
 import re
+from us_states import State
+import math
 
 class City(Location):
     """
@@ -38,8 +40,8 @@ class City(Location):
     __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'continentId', 'countryId', 'stateId', 'cityId', 'aliases', 'population']
     __keyspec__ = Location.__spec__ + ['country', 'state' ]
 
-    _keys = {'name': TextIndex(('name', 'aliases'), ','),
-             'geobox': GeoboxIndex([GeoboxIndex.RES_1KM, GeoboxIndex.RES_4KM, GeoboxIndex.RES_128KM]) }
+    _keys = {'name': TextIndex('City', ('name', 'state', 'aliases'), ','),
+             'geobox': GeoboxIndex('City', [GeoboxIndex.RES_1KM, GeoboxIndex.RES_4KM, GeoboxIndex.RES_16KM, GeoboxIndex.RES_128KM]) }
     
     def __init__(self, **kwargs):
 
@@ -53,8 +55,32 @@ class City(Location):
         self.countryId = kwargs.get('countryId', 0)
         self.stateId = kwargs.get('stateId', 0)
         self.cityId = kwargs.get('cityId', 0)
-        self.aliases = ",".join(filter(lambda x: re.match('^[a-zA-Z0-9,\\-\'": ]+$', x), kwargs.get('aliases', '').split(',')))
+        
+        aliases = set(filter(lambda x: re.match('^[a-zA-Z0-9,\\-\'": ]+$', x), kwargs.get('aliases', '').split(',')))
+        state = State.get(self.state)
+        if state:
+            aliases.add("%s %s" % (self.name, state.code))
+            aliases.add("%s %s" % (self.name, state.name))
+        
+        self.aliases = ",".join(aliases)
+        
+        #index <city state> as an alias
+        
         self.population = kwargs.get('population', 0)
+        
+    def score(self, refLat, refLon):
+        
+        ret = getattr(self, '_score', None)
+        if not ret:
+            population = self.population
+            if not population:
+                population = 10
+            if refLat and refLon:
+                d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
+            
+            ret = math.log(float(1000*population)) - math.log(d if d>=1 else 1.00000001)
+            self._score = ret
+        return ret
         
         
     @classmethod
@@ -64,7 +90,7 @@ class City(Location):
         @return a list of City objects that can be empty
         """
         
-        cities = cls.loadByNamedKey('name', name, redisConn)
+        cities = cls.loadByNamedKey('name', redisConn, name)
         
         #if no need to sort - just return what we get
         if len(cities) > 1 and referenceLat and referenceLon:
@@ -78,12 +104,56 @@ class City(Location):
             cities = filter(lambda x: x.country.lower() == countryLimit.lower(), cities)
         return cities
         
-
+    @classmethod
+    def getByRadius(cls, lat, lon, radius, redisConn, text = None):
+        
+        
+        
+        if not text:
+            cities =  cls.loadByNamedKey('geobox', redisConn, lat, lon, radius, store = bool(text))
+            cities = filter(lambda c: Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, cities)
+            return cities
+        else:
+            
+            #store matching elements from text key
+            nameKey = cls.getIdsByNamedKey('name', redisConn, text, store = True)
+            geoKey = cls.getIdsByNamedKey('geobox', redisConn, lat, lon, radius, store = True)
+            print geoKey, nameKey
+            
+            ids = redisConn.sinter(geoKey, nameKey)
+            
+            cities = cls.multiLoad(ids, redisConn)
+            return filter(lambda c: c and Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, cities)
+#        k = cls._keys['geobox']
+#        k.getIds((lat, lon), radius, redisConn)
+    
+        
 if __name__ == '__main__':
     
-    c =  City(lat = 40.7143, lon= -74.006, country = "United States", state= "New York", name = "New York")
-    import redis
-    r = redis.Redis()
-    c.save(r)
-    c =  City(lat = 40.1143, lon= -74.106, country = "United States", state= "New York", name = "New York")
-    c.save(r)
+    import redis, time
+   
+    r = redis.Redis(db = 8)
+    
+    #c =  City(lat = 40.7143, lon= -74.006, country = "United States", state= "New York", name = "New York")
+    #c.save(r)
+    lat =  40.714
+    lon =   -74.00
+    
+    #lat,lon = 32.0667,34.7667
+    d = 25000
+    st = time.time()
+    cities = City.getByRadius(lat, lon, d, r, "salem")
+    et = time.time()
+    print 1000*(et - st),"ms"
+    cities.sort(lambda x,y: cmp(y.score(lat, lon), x.score(lat,lon)))
+    print "Found %d cities!" % len(cities)
+    print ["%s, %s %.02fkm pop %s score %s" % (c.name, c.state,Location.getLatLonDistance((lat, lon), (c.lat, c.lon)), c.population, c.score(lat, lon)) for c in cities]
+    
+    
+#    for city in cities:
+#        print city.name, city.country, Location.getLatLonDistance((lat, lon), (city.lat, city.lon))
+    #import redis
+    
+    #c.save(r)
+    #c =  City(lat = 40.1143, lon= -74.106, country = "United States", state= "New York", name = "New York")
+    #c.save(r)

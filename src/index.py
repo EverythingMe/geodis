@@ -5,30 +5,41 @@ Created on Aug 1, 2011
 '''
 import string
 import re
+import struct
 
+class AbstractIndex(object):
+    
+    def __init__(self, className):
+        
+        self.className = className
+        
+        
 
-class TextIndex(object):
+class TextIndex(AbstractIndex):
     '''
     classdocs
     '''
     
-    trantab = string.maketrans("-_", "  ")
-
-    def __init__(self, fields, delimiter = ' '):
+    trantab = string.maketrans("-_,", "   ")
+    stopchars = "\"'\\`'[]{}()./?:)(*&^%$#@!="
+    
+    def __init__(self, className, fields, delimiter = ' '):
         '''
         Constructor
         '''
+        AbstractIndex.__init__(self, className)
         self.fields = fields
         self.delimiter = delimiter
         
-    def getKey(self, className, word):
+    def getKey(self, word):
         
-        return 'ft:%s:%s' % (className, word)
+        return 'ft:%s:%s' % (self.className, word)
     
         
-    def normalizeString(self, str_):
+    @staticmethod
+    def normalizeString(str_):
         
-        return str_.translate(self.trantab, "\"'\\`'[]{}(),./?:)(*&^%$#@!=")
+        return str_.translate(TextIndex.trantab, TextIndex.stopchars).lower().strip().replace('  ', ' ')
     
     def save(self, obj, redisConn):
         
@@ -37,23 +48,29 @@ class TextIndex(object):
             [indexKeys.add(self.normalizeString(x.lower().strip())) for x in (getattr(obj, f, '').split(self.delimiter)) ]
             
         for x in indexKeys:
-            redisConn.sadd(self.getKey(obj.__class__.__name__, x), obj.getId())
+            redisConn.sadd(self.getKey(x), obj.getId())
             
         
-    def getIds(self, className, value, redisConn):
+    def getIds(self, redisConn, value, store = False):
         
         values = re.split(self.delimiter, self.normalizeString(value.lower().strip()))
         
         if not values:
             return []
-        keys = [self.getKey(className, value) for value in values]
-        print keys
-        return redisConn.sinter(keys)
+        keys = [self.getKey(value) for value in values]
+        
+        if not store: 
+            return redisConn.sinter(keys)
+        else:
+            tmpKey = 'ft_tmp:%s:%s' % (self.className, " ".join(values))
+            
+            redisConn.sinterstore(tmpKey, keys)
+            return tmpKey
     
     
 from geohasher import hasher
     
-class GeoboxIndex(object):
+class GeoboxIndex(AbstractIndex):
     
     """
     32 0.240432060456 0.132627007902 0.551619478909 [0.05893519217898018, 0.38803435884590953, 0.17061034090581972, 0.3441483498944039]
@@ -107,34 +124,75 @@ class GeoboxIndex(object):
         RES_128KM: 49
     }
     
-    def __init__(self, resolutionsInKM):
+    def __init__(self, className, resolutionsInKM):
         
+        AbstractIndex.__init__(self, className)
         self.resolutions = resolutionsInKM
         
         
-    def getKey(self, className, resolution):
+    def getKey(self, resolution, cell):
         
-        return 'box:%s:%s' % (className, resolution)
+        return 'box:%s:%s:%x' % (self.className, resolution, cell >> 32)
     
         
-    
+    def getGeocell(self, lat, lon, bitres):
+        
+        return (hasher.encode(lat, lon) & int('1'*(64 - bitres) + '0'*bitres, 2))
+        
     def save(self, obj, redisConn):
         
         
         p = redisConn.pipeline()
         for r in self.resolutions:
             
-            _hash = (hasher.encode(obj.lat, obj.lon) >> self.BIT_RESOLUTIONS[r]) << self.BIT_RESOLUTIONS[r]
-            print '%x' % _hash
-            p.zadd(self.getKey(obj.__class__.__name__,r), **{obj.getId(): _hash})
+            cell = self.getGeocell(obj.lat, obj.lon, self.BIT_RESOLUTIONS[r])
+            
+            k = self.getKey(r, cell)
+            #print _hash
+            p.sadd(k, obj.getId())
+            p.zadd(self.getKeysKey(r), **{k: cell})
             
         p.execute()
         
+    def getKeysKey(self, resolution):
+        return 'box:%s:%s:keys' % (self.className, resolution)
         
-    def getIds(self, className, refLocation, radius, redisConn):
         
-        pass
-    
+    def getIds(self, redisConn, lat, lon,  radius, store = False ):
+        
+        
+        res = self.RES_1KM
+        for res in self.resolutions:
+            if res >= radius:
+                break
+        print res
+        
+        if radius > 0 and radius <= self.RES_128KM:  
+            bitres = self.BIT_RESOLUTIONS[res]
+            cell = self.getGeocell(lat, lon, bitres)
+            
+            closest = redisConn.zrevrangebyscore(self.getKeysKey(res), cell + (5 << (bitres)), cell - (5 << (bitres)))
+            if not closest:
+                return []
+            
+            
+            if not store:
+                return redisConn.sunion(closest)
+            else:
+                tmpKey = 'box:%s:%s,%s' % (self.className, lat,lon)
+                    
+                redisConn.sunionstore(tmpKey, closest)
+                return tmpKey
+             
+            
+            
+        return []
+#        else:
+#            closest = []
+        
+        return (x[0] for x in closest)
+        
+            
     
 class IndexableObject(object):
     

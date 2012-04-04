@@ -28,7 +28,6 @@ from countries import countries
 from geohasher import hasher
 import math
 
-
 class Location(object):
     """
     This is the base class for all location subclasses
@@ -42,8 +41,8 @@ class Location(object):
     
     def __init__(self, **kwargs):
 
-        self.lat = kwargs.get('lat', None)
-        self.lon = kwargs.get('lon', None)
+        self.lat = float(kwargs.get('lat', None))
+        self.lon = float(kwargs.get('lon', None))
         self.name = kwargs.get('name', '').strip()
         
 
@@ -96,22 +95,56 @@ class Location(object):
         #build a new object based on the loaded dict
         return cls(**d)
     
+    def score(self, refLat, refLon):
+        """
+        To be implemented by child classes
+        """
+        return 1
+    
+    
+    
     @classmethod
-    def loadByNamedKey(cls, keyName, value, redisConn):
+    def multiLoad(cls, keys, redisConn):
+        """
+        a Factory function to load a location from a given location key
+        """
+        
+        p = redisConn.pipeline()
+        [p.hgetall(str(key)) for key in keys]
+        rx = p.execute()
+        
+        
+        #build a new object based on the loaded dict
+        return [cls(**d) for d in rx if d is not None]
+    
+    @classmethod
+    def getIdsByNamedKey(cls, keyName, redisConn, *args, **kwargs):
+        k = cls._keys[keyName]
+        
+        return k.getIds(redisConn, *args, **kwargs)
+        
+    @classmethod
+    def loadByNamedKey(cls, keyName, redisConn, *args, **kwargs):
         """
         Load a class by a named key indexing some if its fields
         """
          
         k = cls._keys[keyName]
         
-        ids = k.getIds(cls.__name__, value, redisConn)
+        ids = k.getIds(redisConn, *args, **kwargs)
         
-        ret = []
-        for id in ids:
-            ret.append(cls.load(id, redisConn))
-            
+        p  = redisConn.pipeline()
+        [p.hgetall(id) for id in ids]
+        rx = p.execute()
+        
+        ret = [cls(**d) for d in filter(None, rx)]
+        
+#        for id in ids:
+#            ret.append(cls.load(id, redisConn))
             
         return ret
+    
+    
     
     @classmethod
     def getByKey(cls, redisConn, **kwargs):
@@ -151,18 +184,20 @@ class Location(object):
 
         
     @staticmethod
-    def getLatLonDistance(coord1, coord2):
+    def getLatLonDistance(x, y):
         
-        R = 6371; # km
-        lat1, lon1 = float(coord1[0]), float(coord1[1])
-        lat2, lon2 = float(coord2[0]), float(coord2[1])
         
-        x = (lon2-lon1)#* math.cos((lat1+lat2)/2);
-        y = (lat2-lat1);
-        d = math.sqrt(x**2 + y**2)# * R;
+        R = 6371
+        dLat = math.radians(y[0]-x[0])
+        dLon = math.radians(y[1]-x[1])
+        a = math.sin(dLat/2) * math.sin(dLat/2) + \
+            math.cos( math.radians(x[0])) * math.cos( math.radians(y[0])) * \
+            math.sin(dLon/2) * math.sin(dLon/2);
         
-        return d
-        
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        return R * c
+
+
 
     @classmethod
     def getByGeohash(cls, geoKey, redisConn):
@@ -207,8 +242,3 @@ class Location(object):
 
         
 
-        
-
-        
-        
-        
