@@ -27,7 +27,8 @@
 from countries import countries
 from geohasher import hasher
 import math
-
+import struct
+import base64
 class Location(object):
     """
     This is the base class for all location subclasses
@@ -48,7 +49,8 @@ class Location(object):
 
     def getId(self):
 
-        return '%s:%s' % (self.__class__.__name__, ':'.join((str(getattr(self, x)) for x in self.__keyspec__ or self.__spec__)))
+        h = hash(':'.join((str(getattr(self, x)) for x in self.__keyspec__ or self.__spec__)))
+        return '%s:%s' % (self.__class__.__name__,  base64.b64encode(struct.pack('q', h).strip('=')))
 
     @classmethod
     def getGeohashIndexKey(cls):
@@ -132,8 +134,8 @@ class Location(object):
         k = cls._keys[keyName]
         
         ids = k.getIds(redisConn, *args, **kwargs)
-        
-        p  = redisConn.pipeline()
+        print "Found %d ids" % len(ids or [])
+        p  = redisConn.pipeline(False)
         [p.hgetall(id) for id in ids]
         rx = p.execute()
         

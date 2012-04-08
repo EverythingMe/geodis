@@ -41,7 +41,7 @@ class City(Location):
     __keyspec__ = Location.__spec__ + ['country', 'state' ]
 
     _keys = {'name': TextIndex('City', ('name', 'state', 'aliases'), ','),
-             'geobox': GeoboxIndex('City', [GeoboxIndex.RES_1KM, GeoboxIndex.RES_4KM, GeoboxIndex.RES_16KM, GeoboxIndex.RES_128KM]) }
+             'geobox': GeoboxIndex('City', [GeoboxIndex.RES_16KM, GeoboxIndex.RES_128KM]) }
     
     def __init__(self, **kwargs):
 
@@ -118,12 +118,15 @@ class City(Location):
             #store matching elements from text key
             nameKey = cls.getIdsByNamedKey('name', redisConn, text, store = True)
             geoKey = cls.getIdsByNamedKey('geobox', redisConn, lat, lon, radius, store = True)
-            print geoKey, nameKey
             
-            ids = redisConn.sinter(geoKey, nameKey)
+            if nameKey and geoKey:
             
-            cities = cls.multiLoad(ids, redisConn)
-            return filter(lambda c: c and Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, cities)
+                ids = redisConn.sinter(geoKey, nameKey)
+                
+                cities = cls.multiLoad(ids, redisConn)
+                return filter(lambda c: c and Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, cities)
+            else:
+                return []
 #        k = cls._keys['geobox']
 #        k.getIds((lat, lon), radius, redisConn)
     
@@ -131,8 +134,9 @@ class City(Location):
 if __name__ == '__main__':
     
     import redis, time
+    
    
-    r = redis.Redis(db = 8)
+    r = redis.Redis(db = 8, host = 'chuck')
     
     #c =  City(lat = 40.7143, lon= -74.006, country = "United States", state= "New York", name = "New York")
     #c.save(r)
@@ -140,9 +144,9 @@ if __name__ == '__main__':
     lon =   -74.00
     
     #lat,lon = 32.0667,34.7667
-    d = 25000
+    d = 20000
     st = time.time()
-    cities = City.getByRadius(lat, lon, d, r, "salem")
+    cities = City.getByRadius(lat, lon, d, r, "jerusalem")
     et = time.time()
     print 1000*(et - st),"ms"
     cities.sort(lambda x,y: cmp(y.score(lat, lon), x.score(lat,lon)))

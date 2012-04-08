@@ -34,6 +34,7 @@ from optparse import OptionParser
 from provider.geonames import GeonamesImporter
 from provider.ip2location import IP2LocationImporter
 from provider.zipcodes import ZIPImporter
+from provider.factual import BusinessImporter
 from iprange import IPRange
 from city import City
 from zipcode import ZIPCode
@@ -55,8 +56,16 @@ def importGeonames(fileName):
         print "Could not import geonames database..."
         sys.exit(1)
 
-    
 
+def importBusinesses(fileName):
+    
+    global redis_host, redis_port, redis_db
+    importer = BusinessImporter(fileName, redis_host, redis_port, redis_db)
+    if not importer.runImport():
+        print "Could not import geonames database..."
+        sys.exit(1)
+
+    
 
 def importIP2Location(fileName):
 
@@ -100,7 +109,7 @@ if __name__ == "__main__":
                 format='%(asctime)s %(levelname)s in %(module)s.%(funcName)s (%(filename)s:%(lineno)s): %(message)s',
                 )
     #build options parser
-    parser = OptionParser(usage="\n\n%prog [--import_geonames | --import_ip2location] --file=FILE", version="%prog 0.1")
+    parser = OptionParser(usage="\n\n%prog [--import_geonames | --import_ip2location | --import_businesses] --file=FILE", version="%prog 0.1")
 
     parser.add_option("-g", "--import_geonames", dest="import_geonames",
                       action='store_true', default=False,
@@ -113,7 +122,9 @@ if __name__ == "__main__":
     parser.add_option("-z", "--import_zipcodes", dest="import_zipcodes",
                       action='store_true', default=False,
                       help='Import zipcodes')
-
+    parser.add_option("-b", "--import_businesses", dest="import_businesses",
+                      action='store_true', default=False,
+                      help='Import businesses')
     parser.add_option("-f", "--file", dest="import_file",
                   help="Location of the file we want to import", metavar="FILE")
     
@@ -131,7 +142,7 @@ if __name__ == "__main__":
     parser.add_option("-H", "--redis_host", dest="redis_host", default = 'localhost',
                       help="redis host to use", metavar="HOST")
 
-    parser.add_option("-p", "--redis_port", dest="redis_port", default = 6379,
+    parser.add_option("-p", "--redis_port", dest="redis_port", default = 6375,
                       type="int", help="redis port to use", metavar="PORT")
 
     parser.add_option("-n", "--redis_database", dest="redis_db", default = 8,
@@ -151,8 +162,12 @@ if __name__ == "__main__":
     elif options.import_zipcodes:
         importZIPCode(options.import_file)
         
+    elif options.import_businesses:
+        importBusinesses(options.import_file)
+        
     elif options.resolve_ip:
         resolveIP(options.resolve_ip)
+    
         
     elif options.resolve_latlon:
         coords = [float(p) for p in options.resolve_latlon.split(',')]

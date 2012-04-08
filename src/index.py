@@ -6,6 +6,8 @@ Created on Aug 1, 2011
 import string
 import re
 import struct
+from upoints.point import Point
+import math
 
 class AbstractIndex(object):
     
@@ -47,8 +49,9 @@ class TextIndex(AbstractIndex):
         for f in self.fields:
             [indexKeys.add(self.normalizeString(x.lower().strip())) for x in (getattr(obj, f, '').split(self.delimiter)) ]
             
+        
         for x in indexKeys:
-            redisConn.sadd(self.getKey(x), obj.getId())
+            redisConn.zadd(self.getKey(x), **{obj.getId(): 1/float(len(indexKeys)) })
             
         
     def getIds(self, redisConn, value, store = False):
@@ -59,12 +62,16 @@ class TextIndex(AbstractIndex):
             return []
         keys = [self.getKey(value) for value in values]
         
+        tmpKey = 'ft_tmp:%s:%s' % (self.className, " ".join(values))
+        p = redisConn.pipeline(False)
+        p.zinterstore(tmpKey, keys, aggregate = 'SUM')
+        
         if not store: 
-            return redisConn.sinter(keys)
+            p.redisConn.zrevrange(tmpKey, 0,-1, True)
+            rx = p.execute()
+            return rx[1]
         else:
-            tmpKey = 'ft_tmp:%s:%s' % (self.className, " ".join(values))
-            
-            redisConn.sinterstore(tmpKey, keys)
+            p.execute()
             return tmpKey
     
     
@@ -162,22 +169,39 @@ class GeoboxIndex(AbstractIndex):
         
         
         res = self.RES_1KM
-        for res in self.resolutions:
-            if res >= radius:
+        for r in self.resolutions:
+            if r >= radius:
+                res = r 
                 break
-        print res
+        
+        
+        closest = set()
+        
         
         if radius > 0 and radius <= self.RES_128KM:  
             bitres = self.BIT_RESOLUTIONS[res]
             cell = self.getGeocell(lat, lon, bitres)
+            closest.add(self.getKey(res, cell))
+            p = Point(lat, lon)
             
-            closest = redisConn.zrevrangebyscore(self.getKeysKey(res), cell + (5 << (bitres)), cell - (5 << (bitres)))
-            if not closest:
-                return []
+            for bearing in (0, 45, 90, 135, 180, 225, 270, 325):
+                for d in xrange(int(math.sqrt(2 * (radius**2)))): 
+                    dest = p.destination(bearing, d)
+                    
+                    cell = self.getGeocell(dest.latitude, dest.longitude, self.BIT_RESOLUTIONS[res])
+                    print dest, cell
+                    closest.add(self.getKey(res, cell))
+            
+            print closest
+            #print "XXX ", cell, cell + (5 << (bitres)), cell - (5 << (bitres))
+            
+            #closest = redisConn.zrevrangebyscore(self.getKeysKey(res), cell + (5 << (bitres)), cell - (5 << (bitres)))
+            #if not closest:
+                #return []
             
             
             if not store:
-                return redisConn.sunion(closest)
+                return redisConn.sunion(list(closest))
             else:
                 tmpKey = 'box:%s:%s,%s' % (self.className, lat,lon)
                     
@@ -186,7 +210,7 @@ class GeoboxIndex(AbstractIndex):
              
             
             
-        return []
+        return [] if not store else None
 #        else:
 #            closest = []
         
