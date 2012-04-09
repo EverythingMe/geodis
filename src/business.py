@@ -41,7 +41,7 @@ class Business(Location):
     __keyspec__ = Location.__spec__ + ['street', 'city', 'state' ]
 
     _keys = {'name': TextIndex('Business', ('name', 'street'), ' '),
-             'geobox': GeoboxIndex('Business', [GeoboxIndex.RES_1KM,GeoboxIndex.RES_4KM]) }
+             'geobox': GeoboxIndex('Business', [GeoboxIndex.RES_1KM , GeoboxIndex.RES_4KM, GeoboxIndex.RES_16KM]) }
     
     def __init__(self, **kwargs):
 
@@ -87,14 +87,7 @@ class Business(Location):
         
         if not text:
             nodes =  cls.loadByNamedKey('geobox', redisConn, lat, lon, radius, store = bool(text))
-            print "Filtering %d nodes" % len(nodes)
-            for n in nodes:
-                d = Location.getLatLonDistance((lat, lon), (n.lat, n.lon))
-                if d > radius:
-                    print d
-                    
             nodes = filter(lambda c: Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, nodes)
-            print "After: %d nodes" % len(nodes)
             return nodes
         else:
             
@@ -103,6 +96,7 @@ class Business(Location):
             geoKey = cls.getIdsByNamedKey('geobox', redisConn, lat, lon, radius, store = True)
             
             if nameKey and geoKey:
+                
                 tmpKey = 'tk:%s' % (hash('%s' % [lat,lon,radius,text or '']))
                 p = redisConn.pipeline(False)
                 p.zinterstore(tmpKey, {geoKey: 0, nameKey: 1}, 'SUM')
@@ -111,16 +105,14 @@ class Business(Location):
                 ids = dict(rx[1])
                 
                 nodes = cls.multiLoad(ids.keys(), redisConn)
-                
+                print "found %d nodes" % len(nodes)
                 nodes = filter(lambda c: c and Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, nodes)
                 nodes.sort(lambda x,y: cmp(y.score(lat, lon, ids.get(y.getId())), x.score(lat, lon, ids.get(x.getId()))))
                 return nodes
                 
             else:
                 return []
-#        k = cls._keys['geobox']
-#        k.getIds((lat, lon), radius, redisConn)
-    
+
         
 if __name__ == '__main__':
     
@@ -136,7 +128,7 @@ if __name__ == '__main__':
     #lat,lon = 32.0667,34.7667
     d = 2
     st = time.time()
-    nodes = Business.getByRadius(lat, lon, 5, r, 'pizza')
+    nodes = Business.getByRadius(lat, lon, 10, r, 'pizza national ave')
     #nodes.sort(lambda x,y: cmp(y.score(lat, lon), x.score(lat, lon)))
     et = time.time()
     print len(nodes)

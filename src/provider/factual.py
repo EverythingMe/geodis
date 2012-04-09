@@ -55,10 +55,22 @@ class BusinessImporter(Importer):
         pipe = self.redis.pipeline()
         reader = csv.reader(fp, delimiter='\t', quotechar = '"')
         
+        
+        
         i = 0
         fails = 0
         for row in reader:
             try:
+                cat = row[8]
+                if not re.match('^(%s)\s' % "|".join([re.escape(x) for x in (
+                                                                           'Arts, Entertainment', 
+                                                                           'Shopping', 
+                                                                           'Food & Beverage'
+                                                                          )]), 
+                                cat):
+                    
+                    continue
+                
                 if row[10] and row[11]:
                     loc = Business (
                         name =  row[1],

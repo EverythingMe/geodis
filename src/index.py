@@ -8,6 +8,8 @@ import re
 import struct
 from upoints.point import Point
 import math
+import logging
+from contextlib import contextmanager
 
 class AbstractIndex(object):
     
@@ -62,6 +64,9 @@ class TextIndex(AbstractIndex):
             return []
         keys = [self.getKey(value) for value in values]
         
+        if len(keys) == 1 and store:
+            return keys[0]
+        
         tmpKey = 'ft_tmp:%s:%s' % (self.className, " ".join(values))
         p = redisConn.pipeline(False)
         p.zinterstore(tmpKey, keys, aggregate = 'SUM')
@@ -76,6 +81,24 @@ class TextIndex(AbstractIndex):
     
     
 from geohasher import hasher
+import time
+TSTabs = 0
+@contextmanager
+def TimeSampler(func = None, actionDescription = ''):
+    global TSTabs
+    TSTabs += 1
+    
+    st = time.time()
+    yield
+    et = time.time()
+    TSTabs -= 1
+    msg =(TSTabs * '\t') + ('Action %s took %.03fms' % (actionDescription, 1000*(et - st)))
+    
+    if func:
+        func(msg)
+    else:
+        print(msg)
+    
     
 class GeoboxIndex(AbstractIndex):
     
@@ -168,13 +191,16 @@ class GeoboxIndex(AbstractIndex):
     def getIds(self, redisConn, lat, lon,  radius, store = False ):
         
         
-        res = self.RES_1KM
+        res = None
         for r in self.resolutions:
             if r >= radius:
                 res = r 
                 break
         
         
+        if not res:
+            logging.warn("Radius too big for available resolutions")
+            return []
         closest = set()
         
         
@@ -184,24 +210,18 @@ class GeoboxIndex(AbstractIndex):
             closest.add(self.getKey(res, cell))
             p = Point(lat, lon)
             
-            for bearing in (0, 45, 90, 135, 180, 225, 270, 325):
-                for d in xrange(int(math.sqrt(2 * (radius**2)))): 
-                    dest = p.destination(bearing, d)
+            with TimeSampler(None, 'collecting cells'):
+                for bearing in (0, 45, 90, 135, 180, 225, 270, 315):
+                        
+                    dest = p.destination(bearing, math.sqrt(2 * (radius**2)) if bearing % 90 else radius)
                     
                     cell = self.getGeocell(dest.latitude, dest.longitude, self.BIT_RESOLUTIONS[res])
-                    print dest, cell
+                    
                     closest.add(self.getKey(res, cell))
-            
             print closest
-            #print "XXX ", cell, cell + (5 << (bitres)), cell - (5 << (bitres))
-            
-            #closest = redisConn.zrevrangebyscore(self.getKeysKey(res), cell + (5 << (bitres)), cell - (5 << (bitres)))
-            #if not closest:
-                #return []
-            
             
             if not store:
-                return redisConn.sunion(list(closest))
+                return redisConn.sunion(closest)
             else:
                 tmpKey = 'box:%s:%s,%s' % (self.className, lat,lon)
                     
