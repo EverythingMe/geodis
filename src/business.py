@@ -26,10 +26,12 @@
 
 from countries import countries
 from location import Location
-from index import TextIndex, GeoboxIndex
+from index import TextIndex, GeoboxIndex, TimeSampler
 import re
 from us_states import State
 import math
+import itertools
+from geohasher import hasher
 
 class Business(Location):
     """
@@ -93,21 +95,28 @@ class Business(Location):
             
             #store matching elements from text key
             nameKey = cls.getIdsByNamedKey('name', redisConn, text, store = True)
-            geoKey = cls.getIdsByNamedKey('geobox', redisConn, lat, lon, radius, store = True)
+            geoKeys = cls.getIdsByNamedKey('geobox', redisConn, lat, lon, radius, store = True)
             
-            if nameKey and geoKey:
+        
+            if nameKey and geoKeys:
                 
-                tmpKey = 'tk:%s' % (hash('%s' % [lat,lon,radius,text or '']))
-                p = redisConn.pipeline(False)
-                p.zinterstore(tmpKey, {geoKey: 0, nameKey: 1}, 'SUM')
-                p.zrevrange(tmpKey, 0, -1, True)
-                rx = p.execute()
-                ids = dict(rx[1])
-                
-                nodes = cls.multiLoad(ids.keys(), redisConn)
-                print "found %d nodes" % len(nodes)
-                nodes = filter(lambda c: c and Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, nodes)
-                nodes.sort(lambda x,y: cmp(y.score(lat, lon, ids.get(y.getId())), x.score(lat, lon, ids.get(x.getId()))))
+                tmpKey = 'tk:%s::%%s' % (hash('%s' % [lat,lon,radius,text or '']))
+                with TimeSampler(None, 'Getting shit done'):
+                    p = redisConn.pipeline(False)
+                    for id, gk in enumerate(geoKeys):
+                        p.zinterstore(tmpKey % id, {gk: 1, nameKey: 0}, 'SUM')
+                    for id, gk in enumerate(geoKeys):
+                        p.zrevrange(tmpKey % id, 0, -1, True)
+                    
+                    rx = p.execute()
+                with TimeSampler(None, 'Filtering shit out'):
+                    ids = filter(lambda x:  Location.getLatLonDistance((lat, lon), x[1]) <= radius, ((x[0], hasher.decode(long(x[1]))) for x in itertools.chain(*(rx[len(geoKeys):]))))
+                    
+                    
+                nodes = cls.multiLoad((x[0] for x in ids), redisConn)
+#                    #print "found %d nodes" % len(nodes)
+#                    nodes = filter(lambda c: c and Location.getLatLonDistance((lat, lon), (c.lat, c.lon)) <= radius, nodes)
+                    #nodes.sort(lambda x,y: cmp(y.score(lat, lon, 1), x.score(lat, lon, 1)))
                 return nodes
                 
             else:
@@ -128,7 +137,7 @@ if __name__ == '__main__':
     #lat,lon = 32.0667,34.7667
     d = 2
     st = time.time()
-    nodes = Business.getByRadius(lat, lon, 10, r, 'pizza national ave')
+    nodes = Business.getByRadius(lat, lon, 15, r, 'starbucks')
     #nodes.sort(lambda x,y: cmp(y.score(lat, lon), x.score(lat, lon)))
     et = time.time()
     print len(nodes)

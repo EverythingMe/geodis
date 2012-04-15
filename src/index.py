@@ -179,13 +179,9 @@ class GeoboxIndex(AbstractIndex):
             
             k = self.getKey(r, cell)
             #print _hash
-            p.sadd(k, obj.getId())
-            p.zadd(self.getKeysKey(r), **{k: cell})
+            p.zadd(k, **{obj.getId(): hasher.encode(obj.lat, obj.lon)})
             
         p.execute()
-        
-    def getKeysKey(self, resolution):
-        return 'box:%s:%s:keys' % (self.className, resolution)
         
         
     def getIds(self, redisConn, lat, lon,  radius, store = False ):
@@ -220,10 +216,13 @@ class GeoboxIndex(AbstractIndex):
                     closest.add(self.getKey(res, cell))
             print closest
             
+            tmpKey = 'box:%s:%s,%s' % (self.className, lat,lon)
             if not store:
-                return redisConn.sunion(closest)
+                redisConn.zunionstore(tmpKey, list(closest))
+                return redisConn.zrevrange(tmpKey, 0, -1, withscores=True)
             else:
-                tmpKey = 'box:%s:%s,%s' % (self.className, lat,lon)
+                return list(closest)
+                
                     
                 redisConn.sunionstore(tmpKey, closest)
                 return tmpKey
