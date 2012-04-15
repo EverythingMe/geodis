@@ -10,6 +10,7 @@ from upoints.point import Point
 import math
 import logging
 from contextlib import contextmanager
+from location import Location
 
 class AbstractIndex(object):
     
@@ -82,6 +83,7 @@ class TextIndex(AbstractIndex):
     
 from geohasher import hasher
 import time
+import itertools
 TSTabs = 0
 @contextmanager
 def TimeSampler(func = None, actionDescription = ''):
@@ -236,6 +238,53 @@ class GeoboxIndex(AbstractIndex):
         return (x[0] for x in closest)
         
             
+class GeoBoxTextIndex(AbstractIndex):
+    """
+    Mashup of textual and geobox indices
+    """
+    
+    def __init__(self, className, resolutionsInKM, fields, delimiter = ' '):
+        
+        self.geoIndex = GeoboxIndex(className, resolutionsInKM)
+        self.textIndex = TextIndex(className, fields, delimiter)
+        
+    def save(self, obj, redisConn):
+        
+        self.geoIndex.save(obj, redisConn)
+        self.textIndex.save(obj, redisConn)
+        
+        
+    def getIds(self, redisConn, lat, lon,  radius, text = ''):
+        
+        if not text:
+            
+            ids = self.geoIndex.getIds(redisConn, lat, lon, radius, False)
+            nodes = filter(lambda c: c and Location.getLatLonDistance((lat, lon), c[1]) <= radius, ids)
+            return [id[0] for id in ids]
+        else:
+            
+            #store matching elements from text key
+            nameKey = self.textIndex.getIds(redisConn, text, True)
+            geoKeys = self.geoIndex.getIds(redisConn, lat, lon, radius, True)
+        
+            if nameKey and geoKeys:
+                
+                tmpKey = 'tk:%s::%%s' % (hash('%s' % [lat,lon,radius,text or '']))
+                with TimeSampler(None, 'Getting shit done'):
+                    p = redisConn.pipeline(False)
+                    for id, gk in enumerate(geoKeys):
+                        p.zinterstore(tmpKey % id, {gk: 1, nameKey: 0}, 'SUM')
+                    for id, gk in enumerate(geoKeys):
+                        p.zrevrange(tmpKey % id, 0, -1, True)
+                    
+                    rx = p.execute()
+                with TimeSampler(None, 'Filtering shit out'):
+                    ids = filter(lambda x:  Location.getLatLonDistance((lat, lon), x[1]) <= radius, ((x[0], hasher.decode(long(x[1]))) for x in itertools.chain(*(rx[len(geoKeys):]))))
+                    
+                return [id[0] for id in ids]
+            else:
+                return []
+        
     
 class IndexableObject(object):
     
