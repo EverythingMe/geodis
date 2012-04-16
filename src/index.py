@@ -40,7 +40,21 @@ class TextIndex(AbstractIndex):
         
         return 'ft:%s:%s' % (self.className, word)
     
+    def exist(self, terms, redisConn):
         
+        keys = [self.getKey(t) for t in terms]
+        
+        ret = []
+        p = redisConn.pipeline()
+        [p.exists(k) for k in keys]
+        
+        rx = p.execute()
+        for idx, k in enumerate(keys):
+            if rx[idx]:
+                ret.append(terms[idx])
+    
+        return ret
+                
     @staticmethod
     def normalizeString(str_):
         
@@ -78,7 +92,8 @@ class TextIndex(AbstractIndex):
             return rx[1]
         else:
             p.execute()
-            return tmpKey
+            #only return if we have any results
+            return tmpKey if p[0] > 0 else None
     
     
 from geohasher import hasher

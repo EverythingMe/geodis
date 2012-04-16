@@ -47,10 +47,17 @@ class Location(object):
         self.name = kwargs.get('name', '').strip()
         
 
+    @classmethod
+    def _key(cls, _valdict):
+        
+        h = hash(':'.join((str(_valdict.get(x)) for x in cls.__keyspec__ or cls.__spec__)))
+        return '%s:%s' % (cls.__name__,  base64.b64encode(struct.pack('q', h).strip('=')))
+        
     def getId(self):
 
-        h = hash(':'.join((str(getattr(self, x)) for x in self.__keyspec__ or self.__spec__)))
-        return '%s:%s' % (self.__class__.__name__,  base64.b64encode(struct.pack('q', h).strip('=')))
+        #h = hash(':'.join((str(getattr(self, x)) for x in self.__keyspec__ or self.__spec__)))
+        #'%s:%s' % (self.__class__.__name__,  base64.b64encode(struct.pack('q', h).strip('=')))
+        return self._key(self.__dict__)
 
     @classmethod
     def getGeohashIndexKey(cls):
@@ -154,7 +161,7 @@ class Location(object):
         Load an object by combining data from kwargs to create the unique key for this object
         useful for loading ZIP codes with only the known zip
         """
-        key = '%s:%s' % (cls.__name__, ':'.join((str(kwargs.get(x)) for x in cls.__keyspec__ or cls.__spec__)))
+        key = cls._key(kwargs)
         
         return cls.load(key, redisConn)
 

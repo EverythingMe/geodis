@@ -74,15 +74,22 @@ class City(Location):
         ret = getattr(self, '_score', None)
         if not ret:
             population = float(self.population)
+            dScore = 1
             if not population:
                 population = 10
             if refLat and refLon:
                 d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
-            
-            ret = math.log(float(1000*population)) - math.log(d if d>=1 else 1.00000001)
+                dScore = (2 - 2/(1+math.exp(-0.01*d)))
+                popScore =  1 - math.exp(-0.001*population)
+                print d, population, dScore, popScore
+            ret = popScore * dScore
             self._score = ret
         return ret
         
+    @classmethod
+    def exist(cls, terms, redisConn):
+        
+        return cls._keys['name'].exist(terms, redisConn)
         
     @classmethod
     def getByName(cls, name, redisConn, referenceLat = None, referenceLon = None, countryLimit = None):
@@ -122,13 +129,13 @@ if __name__ == '__main__':
     
     #c =  City(lat = 40.7143, lon= -74.006, country = "United States", state= "New York", name = "New York")
     #c.save(r)
-    lat =  40.714
-    lon =   -74.00
+    lat =  51.5085
+    lon =   -0.1
     
     #lat,lon = 32.0667,34.7667
-    d = 16
+    d = 128
     st = time.time()
-    cities = City.getByRadius(lat, lon, d, r, "new york")
+    cities = City.getByRadius(lat, lon, d, r, "haifa")
     et = time.time()
     print 1000*(et - st),"ms"
     print "Found %d cities!" % len(cities)
