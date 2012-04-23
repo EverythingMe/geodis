@@ -79,10 +79,11 @@ class City(Location):
                 population = 10
             if refLat and refLon:
                 d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
-                dScore = (2 - 2/(1+math.exp(-0.01*d)))
-                popScore =  1 - math.exp(-0.001*population)
-                print d, population, dScore, popScore
+                dScore =  max(0.2, 1 - 1/(1+math.exp(-0.05*d+2*math.e) ))
+                popScore =  1 - math.exp(-0.00001*population)
+                print "SCORE FOR %s, %s" % (self.name, self.country), "%dkm" % d, population, dScore, popScore
             ret = popScore * dScore
+            #print ret
             self._score = ret
         return ret
         
@@ -92,7 +93,7 @@ class City(Location):
         return cls._keys['name'].exist(terms, redisConn)
         
     @classmethod
-    def getByName(cls, name, redisConn, referenceLat = None, referenceLon = None, countryLimit = None):
+    def getByName(cls, name, redisConn, referenceLat = None, referenceLon = None, countryLimit = None, limit = 5):
         """
         Load a citiy or a list of city by name or alias to the city. for example, name can be New York or NYC
         @return a list of City objects that can be empty
@@ -110,7 +111,7 @@ class City(Location):
         
         if countryLimit:
             cities = filter(lambda x: x.country.lower() == countryLimit.lower(), cities)
-        return cities
+        return cities[:limit]
         
     @classmethod
     def getByRadius(cls, lat, lon, radius, redisConn, text = None, limit = 5):
@@ -135,7 +136,8 @@ if __name__ == '__main__':
     #lat,lon = 32.0667,34.7667
     d = 128
     st = time.time()
-    cities = City.getByRadius(lat, lon, d, r, "haifa")
+    #cities = City.getByRadius(lat, lon, d, r, "haifa")
+    cities = City.getByName('new york', r, lat, lon)
     et = time.time()
     print 1000*(et - st),"ms"
     print "Found %d cities!" % len(cities)

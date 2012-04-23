@@ -59,6 +59,11 @@ class Location(object):
         #'%s:%s' % (self.__class__.__name__,  base64.b64encode(struct.pack('q', h).strip('=')))
         return self._key(self.__dict__)
 
+    def get(self, prop):
+
+        return getattr(self, prop)
+
+
     @classmethod
     def getGeohashIndexKey(cls):
 
@@ -141,6 +146,7 @@ class Location(object):
         k = cls._keys[keyName]
         
         ids = k.getIds(redisConn, *args, **kwargs)
+        
         print "Found %d ids" % len(ids or [])
         p  = redisConn.pipeline(False)
         [p.hgetall(id) for id in ids]
