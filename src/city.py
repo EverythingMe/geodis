@@ -30,6 +30,7 @@ from index import TextIndex, GeoboxIndex, GeoBoxTextIndex
 import re
 from us_states import State
 import math
+import logging
 
 class City(Location):
     """
@@ -77,11 +78,12 @@ class City(Location):
             dScore = 1
             if not population:
                 population = 10
+            popScore =  1 - math.exp(-0.00001*population)
             if refLat and refLon:
                 d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
                 dScore =  max(0.2, 1 - 1/(1+math.exp(-0.05*d+2*math.e) ))
-                popScore =  1 - math.exp(-0.00001*population)
-                print "SCORE FOR %s, %s" % (self.name, self.country), "%dkm" % d, population, dScore, popScore
+
+                logging.info("SCORE FOR %s, %s: distance %skm, population %s, score: %s", self.name, self.country, d, population, dScore * popScore)
             ret = popScore * dScore
             #print ret
             self._score = ret
