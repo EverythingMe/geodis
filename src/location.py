@@ -29,6 +29,8 @@ from geohasher import hasher
 import math
 import struct
 import base64
+import logging
+
 class Location(object):
     """
     This is the base class for all location subclasses
@@ -147,7 +149,7 @@ class Location(object):
         
         ids = k.getIds(redisConn, *args, **kwargs)
         
-        print "Found %d ids" % len(ids or [])
+        logging.info("Found %d ids for %s",len(ids or []), keyName)
         p  = redisConn.pipeline(False)
         [p.hgetall(id) for id in ids]
         rx = p.execute()
