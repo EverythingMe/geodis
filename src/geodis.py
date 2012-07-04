@@ -38,6 +38,8 @@ from iprange import IPRange
 from city import City
 from zipcode import ZIPCode
 
+import us_states
+
 __author__="dvirsky"
 __date__ ="$Mar 25, 2011 4:44:22 PM$"
 
@@ -53,12 +55,10 @@ def importGeonames(fileName):
         print "Could not import geonames database..."
         sys.exit(1)
 
-    
-
 
 def importIP2Location(fileName):
 
-    print redis_host, redis_port, redis_db
+    global redis_host, redis_port, redis_db
     importer = IP2LocationImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport(True):
         print "Could not import geonames database..."
@@ -85,11 +85,13 @@ def resolveIP(ip):
 def resolveCoords(lat, lon):
     global redis_host, redis_port, redis_db
     r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
-    loc = ZIPCode.getByLatLon(lat, lon, r)
+    loc = City.getByLatLon(lat, lon, r)
     print loc
 
 
 if __name__ == "__main__":
+    
+    
     
     logging.basicConfig(
                 level = logging.INFO,
@@ -105,12 +107,15 @@ if __name__ == "__main__":
     parser.add_option("-i", "--import_ip2coutnry", dest="import_ip2location",
                       action='store_true', default=False,
                       help='Import ip ranges from ip2country.com dumps')
+    
     parser.add_option("-z", "--import_zipcodes", dest="import_zipcodes",
                       action='store_true', default=False,
                       help='Import zipcodes')
-
     parser.add_option("-f", "--file", dest="import_file",
                   help="Location of the file we want to import", metavar="FILE")
+    
+    parser.add_option("-d", "--dir", dest="import_dir",
+                  help="Location of the files we want to import", metavar="DIR")
 
     parser.add_option("-P", "--resolve_ip", dest="resolve_ip", default = None,
                       help="resolve an ip address to location", metavar="IP_ADDR")
@@ -123,13 +128,12 @@ if __name__ == "__main__":
     parser.add_option("-H", "--redis_host", dest="redis_host", default = 'localhost',
                       help="redis host to use", metavar="HOST")
 
-    parser.add_option("-p", "--redis_port", dest="redis_port", default = 6379,
+    parser.add_option("-p", "--redis_port", dest="redis_port", default = 6375,
                       type="int", help="redis port to use", metavar="PORT")
 
     parser.add_option("-n", "--redis_database", dest="redis_db", default = 8,
                       type="int", help="redis database to use (default 8)", metavar="DB_NUM")
     
-
     (options, args) = parser.parse_args()
     redis_host = options.redis_host
     redis_port = options.redis_port
@@ -146,6 +150,7 @@ if __name__ == "__main__":
         
     elif options.resolve_ip:
         resolveIP(options.resolve_ip)
+    
         
     elif options.resolve_latlon:
         coords = [float(p) for p in options.resolve_latlon.split(',')]

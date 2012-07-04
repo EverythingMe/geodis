@@ -30,12 +30,12 @@ from zipcode import ZIPCode
 from us_states import code_to_state
 import csv
 import logging
+from city import City
 
 from importer import Importer
 
 class ZIPImporter(Importer):
     
-        
     def runImport(self):
         """
         File Format:
@@ -45,15 +45,43 @@ class ZIPImporter(Importer):
         try:
             fp = open(self.fileName)
         except Exception, e:
-            logging.error("could not open file %s for reading: %s" % (self.fileName, e))
+            logging.error("could not open file %s for reading: %s" ,self.fileName, e)
             return False
 
+        self.reset(ZIPCode)
+
         reader = csv.reader(fp, delimiter=',', quotechar = '"')
+        
+        features = {}
+        countryId = None
+        continentId = None
+        for key in self.redis.sort(City.getGeohashIndexKey(), by='nosort'):
+            try:
+                city = self.redis.hgetall(key)#dict(zip(City.__spec__, key.split(':')[1:]))
+            except Exception, e:
+                logging.error(e)
+                continue
+            
+            if city.get('country')=='United States':
+                
+                if not continentId:
+                    continentId = city['continentId']
+                
+                if not countryId:
+                    countryId = city['countryId']
+                    
+                state = features.get(city['state'], None)
+                if not state:
+                    state = {'id': city['stateId'], 'cities':{}}
+                    features[city['state']] = state
+                state['cities'][city['name']] = city['cityId']
+            
         pipe = self.redis.pipeline()
-
         i = 0
+        fails = 0
         for row in reader:
-
+            if len(row)==0:
+                continue
             try:
                 name = row[0]
                 city = row[1]
@@ -62,26 +90,38 @@ class ZIPImporter(Importer):
                 lon = float(row[4])
                 state = stateCode#code_to_state.get(stateCode, '').title()
                 country = 'US'
+                continent = 'Norh America'
+                
+                stateName = code_to_state.get(stateCode, '').title()
+                stateId = features[stateName]['id']
+                cityId = features[stateName]['cities'].get(city)
 
                 loc = ZIPCode(name = name,
                               city = city,
-                                country = country,
-                                state = state,
-                                lat = lat,
-                                lon = lon)
+                              cityId = cityId,
+                              state = state,
+                              stateId = stateId,
+                              country = country,
+                              countryId = countryId,
+                              continent = continent,
+                              continentId = continentId,
+                              lat = lat,
+                              lon = lon)
 
                 loc.save(pipe)
 
                 
                 
             except Exception, e:
-                logging.error("Could not import line %s: %s" % (row, e))
+                logging.error("Could not import line #%d: %s, %s: %s" % (i+1, city, state, e))
+                fails += 1
+                
             i += 1
             if i % 1000 == 0:
                 pipe.execute()
 
         pipe.execute()
 
-        logging.info("Imported %d locations" % i)
+        logging.info("Imported %d locations, failed %d times" , i, fails)
 
-        return i
+        return True

@@ -42,18 +42,19 @@ class IP2LocationImporter(Importer):
         "67134976","67135231","US","UNITED STATES","CALIFORNIA","LOS ANGELES","34.045200","-118.284000","90001"
 
         """
+        
+        try:
+            fp = open(self.fileName)
+        except Exception, e:
+            logging.error("could not open file %s for reading: %s" ,self.fileName, e)
+            return False
+        
         if reset:
             print "Deleting old ip data..."
             self.redis.delete(IPRange._indexKey)
 
         print "Starting import..."
             
-        try:
-            fp = open(self.fileName)
-        except Exception, e:
-            logging.error("could not open file %s for reading: %s" % (self.fileName, e))
-            return False
-
         reader = csv.reader(fp, delimiter=',', quotechar='"')
         pipe = self.redis.pipeline()
 
@@ -83,15 +84,15 @@ class IP2LocationImporter(Importer):
                 range.save(pipe)
                 
             except Exception, e:
-                logging.error("Could not save record: %s" % e)
+                logging.error("Could not save record: %s" , e)
 
             i += 1
             if i % 10000 == 0:
-                logging.info("Dumping pipe. did %d ranges" % i)
+                logging.info("Dumping pipe. did %d ranges" , i)
                 pipe.execute()
 
         pipe.execute()
-        logging.info("Imported %d locations" % i)
+        logging.info("Imported %d locations" , i)
 
         return i
 
