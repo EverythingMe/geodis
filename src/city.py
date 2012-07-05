@@ -136,10 +136,10 @@ if __name__ == '__main__':
     lon =   -0.1
     
     #lat,lon = 32.0667,34.7667
-    d = 128
+    d = 100
     st = time.time()
-    #cities = City.getByRadius(lat, lon, d, r, "haifa")
-    cities = City.getByName('new york', r, lat, lon)
+    cities = City.getByRadius(lat, lon, d, r, "luton")
+    #cities = City.getByName('new york', r, lat, lon)
     et = time.time()
     print 1000*(et - st),"ms"
     print "Found %d cities!" % len(cities)
