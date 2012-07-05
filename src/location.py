@@ -27,7 +27,9 @@
 from countries import countries
 from geohasher import hasher
 import math
-
+import struct
+import base64
+import logging
 
 class Location(object):
     """
@@ -37,16 +39,32 @@ class Location(object):
     __spec__ = ['lat', 'lon', 'name']
     __keyspec__ = None
     
+    #keys should be named so we can query by the key names
+    _keys = {}
+    
     def __init__(self, **kwargs):
 
-        self.lat = kwargs.get('lat', None)
-        self.lon = kwargs.get('lon', None)
+        self.lat = float(kwargs.get('lat', None))
+        self.lon = float(kwargs.get('lon', None))
         self.name = kwargs.get('name', '').strip()
         
 
+    @classmethod
+    def _key(cls, _valdict):
+        
+        h = hash(':'.join((str(_valdict.get(x)) for x in cls.__keyspec__ or cls.__spec__)))
+        return '%s:%s' % (cls.__name__,  base64.b64encode(struct.pack('q', h).strip('=')))
+        
     def getId(self):
 
-        return '%s:%s' % (self.__class__.__name__, ':'.join((str(getattr(self, x)) for x in self.__keyspec__ or self.__spec__)))
+        #h = hash(':'.join((str(getattr(self, x)) for x in self.__keyspec__ or self.__spec__)))
+        #'%s:%s' % (self.__class__.__name__,  base64.b64encode(struct.pack('q', h).strip('=')))
+        return self._key(self.__dict__)
+
+    def get(self, prop):
+
+        return getattr(self, prop)
+
 
     @classmethod
     def getGeohashIndexKey(cls):
@@ -62,7 +80,8 @@ class Location(object):
 
         self._indexGeohash(redisConn)
 
-        
+        for k in self._keys.values():
+            k.save(self, redisConn)
 
     def _indexGeohash(self, redisConn):
         """
@@ -73,6 +92,9 @@ class Location(object):
 
 
     def __str__(self):
+        return "%s: %s" % (self.__class__.__name__, self.__dict__)
+
+    def __repr__(self):
         return "%s: %s" % (self.__class__.__name__, self.__dict__)
     
     @classmethod
@@ -88,11 +110,73 @@ class Location(object):
         
         #build a new object based on the loaded dict
         return cls(**d)
+    
+    def score(self, refLat, refLon):
+        """
+        To be implemented by child classes
+        """
+        return 1
+    
+    
+    
+    @classmethod
+    def multiLoad(cls, keys, redisConn):
+        """
+        a Factory function to load a location from a given location key
+        """
+        
+        p = redisConn.pipeline()
+        [p.hgetall(str(key)) for key in keys]
+        rx = p.execute()
+        
+        
+        #build a new object based on the loaded dict
+        return [cls(**d) for d in rx if d is not None]
+    
+    @classmethod
+    def getIdsByNamedKey(cls, keyName, redisConn, *args, **kwargs):
+        k = cls._keys[keyName]
+        
+        return k.getIds(redisConn, *args, **kwargs)
+        
+    @classmethod
+    def loadByNamedKey(cls, keyName, redisConn, *args, **kwargs):
+        """
+        Load a class by a named key indexing some if its fields
+        """
+         
+        k = cls._keys[keyName]
+        
+        ids = k.getIds(redisConn, *args, **kwargs)
+        
+        logging.info("Found %d ids for %s",len(ids or []), keyName)
+        p  = redisConn.pipeline(False)
+        [p.hgetall(id) for id in ids]
+        rx = p.execute()
+        
+        ret = [cls(**d) for d in filter(None, rx)]
+        
+#        for id in ids:
+#            ret.append(cls.load(id, redisConn))
+            
+        return ret
+    
+    
+    
+    @classmethod
+    def getByKey(cls, redisConn, **kwargs):
+        """
+        Load an object by combining data from kwargs to create the unique key for this object
+        useful for loading ZIP codes with only the known zip
+        """
+        key = cls._key(kwargs)
+        
+        return cls.load(key, redisConn)
 
 
     @classmethod
     def getByLatLon(cls, lat, lon, redisConn):
-
+        
         geoKey = hasher.encode(lat, lon)
         
         return cls.getByGeohash(geoKey, redisConn)
@@ -108,11 +192,27 @@ class Location(object):
         try:
             coords1 = hasher.decode(geoHash1)
             coords2 = hasher.decode(geoHash2)
-            return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
-                         math.pow(coords1[1] - coords2[1], 2))
+            return Location.getLatLonDistance(coords1, coords2)
+            #return math.sqrt(math.pow(coords1[0] - coords2[0], 2) +
+            #math.pow(coords1[1] - coords2[1], 2))
         except Exception, e:
             print e
             return None
+
+        
+    @staticmethod
+    def getLatLonDistance(x, y):
+        
+        
+        R = 6371
+        dLat = math.radians(y[0]-x[0])
+        dLon = math.radians(y[1]-x[1])
+        a = math.sin(dLat/2) * math.sin(dLat/2) + \
+            math.cos( math.radians(x[0])) * math.cos( math.radians(y[0])) * \
+            math.sin(dLon/2) * math.sin(dLon/2);
+        
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        return R * c
 
 
 
@@ -136,7 +236,7 @@ class Location(object):
         selected = None
         if not candidates :
             return None
-
+        
         for i in xrange(len(candidates)):
             
             gk = long(candidates[i][1])
@@ -159,8 +259,3 @@ class Location(object):
 
         
 
-        
-
-        
-        
-        
