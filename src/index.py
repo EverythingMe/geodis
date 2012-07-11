@@ -114,7 +114,7 @@ class TextIndex(AbstractIndex):
             p.zrevrange(tmpKey, 0,-1, True)
 
             rx = p.execute()
-            return [x[0] for x in rx[1]]
+            return [x[0] for x in rx[-1]]
         else:
             p.execute()
             #only return if we have any results
