@@ -75,15 +75,15 @@ class City(Location):
         ret = getattr(self, '_score', None)
         if not ret:
             population = float(self.population)
-            dScore = 1
+            dScore = 0.2
             if not population:
                 population = 10
             popScore =  1 - math.exp(-0.00001*population)
             if refLat and refLon:
                 d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
-                dScore =  max(0.2, 1 - 1/(1+math.exp(-0.05*d+2*math.e) ))
+                dScore =  max(0.4, 1 - 1/(1+math.exp(-0.05*d+2*math.e) ))
 
-                logging.info("SCORE FOR %s, %s: distance %skm, population %s, score: %s", self.name, self.country, d, population, dScore * popScore)
+                logging.warn("SCORE FOR %s, %s: distance %skm, population %s, score: %s", self.name, self.country, d, population, dScore * popScore)
             ret = popScore * dScore
             #print ret
             self._score = ret
