@@ -110,9 +110,11 @@ class State(object):
 
     def score(self, refLat, refLon):
 
+        if refLat is None or refLon is None:
+            return 0.2
         d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
         dScore =  max(0.2, 1 - 1/(1+math.exp(-0.012*d+2*math.e) ))
-        print d, dScore
+
 
         return dScore
 
