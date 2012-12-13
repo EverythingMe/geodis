@@ -38,8 +38,11 @@ class City(Location):
     """
 
     #what we want to save for a city
-    __spec__ = Location.__spec__ + ['continent', 'country', 'state', 'continentId', 'countryId', 'stateId', 'cityId', 'aliases', 'population']
+    __countryspec__ = ['continent', 'country', 'continentId', 'countryId']
+    __spec__ = Location.__spec__ + __countryspec__ + ['state', 'stateId', 'cityId', 'aliases', 'population']
     __keyspec__ = Location.__spec__ + ['country', 'state' ]
+    
+    __cityspec__ = set(__spec__) - set(__countryspec__)
 
     _keys = {'name': TextIndex('City', ('name', 'aliases'), ','),
              'geoname': GeoBoxTextIndex('City', [GeoboxIndex.RES_128KM], ('name', 'aliases'), ',')
@@ -88,6 +91,13 @@ class City(Location):
             #print ret
             self._score = ret
         return ret
+        
+    def toCountry(self):
+        """
+        Removes all non-country and non-continent values from the city
+        """
+        for k in self.__cityspec__:
+            self.__dict__[k]=None
         
     @classmethod
     def exist(cls, terms, redisConn):
