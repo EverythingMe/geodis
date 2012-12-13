@@ -102,11 +102,12 @@ class IPRange(object):
         """
 
         range = IPRange.get(ip, redisConn)
-        
+
+
         if not range or not re.match('^[0-9]{5}$', range.zipcode):
             return None
 
-        return ZIPCode.load('ZIPCode:%s' % range.zipcode, redisConn)
+        return ZIPCode.getByKey(redisConn, name = range.zipcode)
 
 
 
