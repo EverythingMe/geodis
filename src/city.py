@@ -72,13 +72,14 @@ class City(Location):
         #index <city state> as an alias
         
         self.population = kwargs.get('population', 0)
-        
+
+
     def score(self, refLat, refLon):
         
         ret = getattr(self, '_score', None)
         if not ret:
             population = float(self.population)
-            dScore = 0.2
+            dScore = 0.5
             if not population:
                 population = 10
             popScore =  1 - math.exp(-0.00007*population)
@@ -115,13 +116,15 @@ class City(Location):
         cities = cls.loadByNamedKey('name', redisConn, name)
         
         #if no need to sort - just return what we get
-        if len(cities) > 1 and referenceLat and referenceLon:
+        if len(cities) > 1:
             
             #sort by distance to the user
-            cities.sort(lambda x,y: cmp(cls.getLatLonDistance((x.lat, x.lon), (referenceLat, referenceLon)), 
-                                        cls.getLatLonDistance((y.lat, y.lon), (referenceLat, referenceLon))
-                                    ))
-        
+            cities.sort(lambda x,y: cmp(x.score(referenceLat, referenceLon),
+                                        y.score(referenceLat, referenceLon)
+                                    ), reverse=True)
+
+
+
         if countryLimit:
             cities = filter(lambda x: x.country.lower() == countryLimit.lower(), cities)
         return cities[:limit]
