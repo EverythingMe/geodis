@@ -81,10 +81,10 @@ class City(Location):
             dScore = 0.2
             if not population:
                 population = 10
-            popScore =  1 - math.exp(-0.00001*population)
+            popScore =  1 - math.exp(-0.00007*population)
             if refLat and refLon:
                 d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
-                dScore =  max(0.6, 1 - 1/(1+math.exp(-0.02*d+2*math.e) ))
+                dScore =  max(0.6, math.pow(1 - 1/(1+math.exp(-0.02*d+2*math.e) ), 0.5))
 
                 logging.info("SCORE FOR %s, %s: distance %skm, population %s, score: %s", self.name, self.country, d, population, dScore * popScore)
             ret = popScore * dScore
