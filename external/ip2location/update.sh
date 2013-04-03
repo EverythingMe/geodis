@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -x
 MONTH=$(date +%m)
 REDIS_HOST="127.0.0.1"
 REDIS_DB=8
