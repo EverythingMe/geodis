@@ -38,7 +38,6 @@ verify_zip() {
 
 [ -n "$LOGIN" ] || usage
 [ -n "$PASSWORD" ] || usage
-[ -n "$USER" ] || usage
 [ -n "$PKG" ] || usage
 
 [ -z "$TEMP" ] && TEMP=/tmp
