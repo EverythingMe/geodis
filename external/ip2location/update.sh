@@ -54,6 +54,6 @@ cd $(dirname $0)
 verify_zip "$TMPDIR/$PKG-$MONTH.zip"
 unzip -u -o -d $TMPDIR "$TMPDIR/$PKG-$MONTH.zip" 'IP*.CSV' || die "Failed to download, quitting"
 
-PKG_FILE="$TMPDIR/IP*.CSV"
+PKG_FILE="$TMPDIR/IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE.CSV"
 cd ../../src/
 ./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
