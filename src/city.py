@@ -82,12 +82,13 @@ class City(Location):
             dScore = 0.5
             if not population:
                 population = 10
-            popScore =  1 - math.exp(-0.00007*population)
+            popScore =  1 - math.exp(-0.000004*population)
+
             if refLat and refLon:
                 d = Location.getLatLonDistance((self.lat, self.lon), (refLat, refLon))
-                dScore =  max(0.6, math.pow(1 - 1/(1+math.exp(-0.02*d+2*math.e) ), 0.5))
+                dScore =  max(0.5, math.pow(1 - 1/(1+math.exp(-0.02*d+2*math.e) ), 0.3))
 
-                logging.info("SCORE FOR %s, %s: distance %skm, population %s, score: %s", self.name, self.country, d, population, dScore * popScore)
+                logging.info("SCORE FOR %s, %s: distance %skm, population %s, dscore: %s, popscore: %s score: %s", self.name, self.country, d, population, dScore, popScore, dScore * popScore)
             ret = popScore * dScore
 
             #print ret
@@ -143,21 +144,21 @@ if __name__ == '__main__':
     
    
     r = redis.Redis(db = 8, host = 'localhost', port = 6375)
-    
+    logging.basicConfig(level = 0)
     #c =  City(lat = 40.7143, lon= -74.006, country = "United States", state= "New York", name = "New York")
     #c.save(r)
-    lat =  51.5085
-    lon =   -0.1
+    #lat =  51.5085
+    #lon =   -0.1
     
-    #lat,lon = 32.0667,34.7667
+    lat,lon = 32.0667,34.7667
     d = 128
     st = time.time()
     #cities = City.getByRadius(lat, lon, d, r, "haifa")
-    cities = City.getByName('new york', r, lat, lon)
+    cities = City.getByName('tel aviv', r, lat, lon)
     et = time.time()
     print 1000*(et - st),"ms"
     print "Found %d cities!" % len(cities)
-    print "\n".join(["%s, %s %.02fkm pop %s score %s" % (c.name, c.state,Location.getLatLonDistance((lat, lon), (c.lat, c.lon)), c.population, c.score(lat, lon)) for c in cities])
+    print "\n".join(["%s %s, %s %.02fkm pop %s score %s" % (c.country, c.name, c.state, Location.getLatLonDistance((lat, lon), (c.lat, c.lon)), c.population, c.score(lat, lon)) for c in cities])
     
     
 #    for city in cities:
