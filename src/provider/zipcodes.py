@@ -26,11 +26,13 @@
 
 #Importer for zipcodes.csv file found in /data
 
-from zipcode import ZIPCode
-import us_states
+
 import csv
 import logging
-from city import City
+
+from .. import us_states
+from ..zipcode import ZIPCode
+from ..city import City
 
 from importer import Importer
 

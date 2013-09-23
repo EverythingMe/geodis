@@ -31,15 +31,15 @@ import logging
 import sys
 from optparse import OptionParser
 
-from provider.geonames import GeonamesImporter
-from provider.ip2location import IP2LocationImporter
-from provider.zipcodes import ZIPImporter
-from provider.factual import BusinessImporter
-from iprange import IPRange
-from city import City
-from zipcode import ZIPCode
+from geodis.provider.geonames import GeonamesImporter
+from geodis.provider.ip2location import IP2LocationImporter
+from geodis.provider.zipcodes import ZIPImporter
+from geodis.provider.factual import BusinessImporter
+from geodis.iprange import IPRange
+from geodis.city import City
+from geodis.zipcode import ZIPCode
 
-import us_states
+from geodis import us_states
 
 __author__="dvirsky"
 __date__ ="$Mar 25, 2011 4:44:22 PM$"

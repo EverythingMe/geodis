@@ -24,14 +24,16 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from countries import countries
-from location import Location
-from index import GeoBoxTextIndex, GeoboxIndex, TimeSampler
 import re
-from us_states import State
 import math
 import itertools
+
 from geohasher import hasher
+
+from .countries import countries
+from .location import Location
+from .index import GeoBoxTextIndex, GeoboxIndex, TimeSampler
+from .us_states import State
 
 class Business(Location):
     """

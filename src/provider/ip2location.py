@@ -31,8 +31,8 @@ import csv
 import logging
 import redis
 
-from importer import Importer
-from iprange import IPRange
+from .importer import Importer
+from ..iprange import IPRange
 
 class IP2LocationImporter(Importer):
 

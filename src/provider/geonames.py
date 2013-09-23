@@ -26,12 +26,13 @@
 
 #Importer for locations from geonames
 
-from city import City
 import csv
 import logging
 import redis
 import re
-from importer import Importer
+
+from ..city import City
+from .importer import Importer
 
 class GeonamesImporter(Importer):
     

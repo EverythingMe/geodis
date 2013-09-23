@@ -24,11 +24,12 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from countries import countries
-from location import Location
-from index import TextIndex, GeoboxIndex, GeoBoxTextIndex
+from .countries import countries
+from .location import Location
+from .index import TextIndex, GeoboxIndex, GeoBoxTextIndex
+from .us_states import State
+
 import re
-from us_states import State
 import math
 import logging
 

@@ -24,5 +24,3 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from iprange import IPRange
-from city import City

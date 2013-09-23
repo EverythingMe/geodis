@@ -24,8 +24,10 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from countries import countries
+from .countries import countries
+
 from geohasher import hasher
+
 import math
 import struct
 import base64

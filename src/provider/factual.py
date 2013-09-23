@@ -25,13 +25,13 @@
 #or implied, of Do@.
 
 #Importer for locations from geonames
-
-from business import Business
 import csv
 import logging
 import redis
 import re
-from importer import Importer
+
+from ..business import Business
+from .importer import Importer
 
 class BusinessImporter(Importer):
     

@@ -33,7 +33,8 @@ from upoints.point import Point
 import math
 import logging
 from contextlib import contextmanager
-from location import Location
+
+from .location import Location
 
 class AbstractIndex(object):
     
