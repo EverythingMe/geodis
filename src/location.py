@@ -227,8 +227,8 @@ class Location(object):
 
         key = cls.getGeohashIndexKey()
         tx = redisConn.pipeline()
-        tx.zrangebyscore(key, geoKey, 'inf', 0, 4, True)
-        tx.zrevrangebyscore(key, geoKey, '-inf', 0, 4, True)
+        tx.zrangebyscore(key, geoKey, 'inf', 0, 10, True)
+        tx.zrevrangebyscore(key, geoKey, '-inf', 0, 10, True)
         ret = tx.execute()
 
         #find the two closest locations to the left and to the right of us
