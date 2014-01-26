@@ -26,7 +26,8 @@
 
 #Importer for locations from geonames
 
-import csv
+import csv, sys
+csv.field_size_limit(sys.maxsize)
 import logging
 import redis
 import re
@@ -72,6 +73,7 @@ class GeonamesImporter(Importer):
                     aliases =       row[10],
                     population =    int(row[11])
                 )
+
                 loc.save(pipe)
                 
             except Exception, e:
