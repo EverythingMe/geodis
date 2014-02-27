@@ -1,0 +1,6 @@
+git+ssh://git@gitlab.doit9.com/backend/pythrift.git@master#egg=pythrift
+redis>=2.7.1
+geohasher
+upoints
+futures
+tornado>=3.2
