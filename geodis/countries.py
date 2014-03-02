@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 countries = {
     "AD": "Andorra",
     "AE": "United Arab Emirates",
