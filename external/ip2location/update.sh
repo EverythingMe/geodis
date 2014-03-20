@@ -18,7 +18,7 @@ for i; do
 done
 
 die() {
-	echo $1 >/dev/stderr
+	echo $1 >&2
 	exit 2
 }
 
