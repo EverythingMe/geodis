@@ -133,12 +133,17 @@ class GeonamesLoader:
         logging.info('Loading %s...' % allCountires)
         for line in open(allCountires).xreadlines():
             r = line.split('\t')
-            fc = r[Cols.feature_code]
+            fc = r[Cols.feature_code] 
+            #print r[Cols.name], fc
             
             if fc in featureCodes and \
                     (r[Cols.feature_class]!='P' or int(r[Cols.population])>=1000) and \
                     (r[Cols.feature_code]!='TERR' or int(r[Cols.gtopo3])>=0):
                 
+                if fc == 'TERR' and r[Cols.country_code] == 'AU':
+                    print r
+                    continue
+
                 ft = featureCodes[fc]
                 if ft in ids:
                     id = '_'.join([r[id] for id in ids[ft]])
@@ -194,14 +199,14 @@ class GeonamesLoader:
         logging.info('Dumping CSV')
         cur = self.db.cursor()
         cur.execute("""
-            SELECT l0.id as continent_id, l0.name as continent_name, l1.id as country_id, l1.name as country_name, l2.id as state_id,l2.name as state_name,
-            l3.id as city_id, l3.name as city_name, l3.lat as lat, l3.lon as lon, l3.aliases as aliases, l3.population as population,
-            l2.type as type2, l1.type as type1, l0.type as type0 
-            FROM locations l0
-            JOIN locations l1 ON (l0.id=l1.parentId)
-            JOIN locations l2 ON (l1.id=l2.parentId)
-            JOIN locations l3 ON (l2.id=l3.parentId)
-            WHERE l3.type = 'City'
+            SELECT continent.id as continent_id, continent.name as continent_name, country.id as country_id, country.name as country_name, state.id as state_id,state.name as state_name,
+            city.id as city_id, city.name as city_name, city.lat as lat, city.lon as lon, city.aliases as aliases, city.population as population,
+            state.type as type2, country.type as type1, continent.type as type0 
+            FROM locations city
+	    JOIN locations state ON (city.parentId=state.id)
+            JOIN locations country ON (state.parentId=country.id)
+            JOIN locations continent ON (continent.id=country.parentId)
+            WHERE city.type = 'City'
         """)
         
         for row in cur.fetchall():
