@@ -96,7 +96,7 @@ class ZIPImporter(Importer):
 
                 state = stateCode#code_to_state.get(stateCode, '').title()
                 country = 'US'
-                continent = 'Norh America'
+                continent = 'North America'
 
 
                 state = us_states.State.get(stateCode)
