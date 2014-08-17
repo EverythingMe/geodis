@@ -80,9 +80,6 @@ class  TestGeodis(unittest.TestCase):
         self.assertTrue(loc.country == 'United States')
         self.assertTrue(loc.state == 'CA' or loc.state == 'California')
 
-
-
-
     def testCountryUtils(self):
 
         testData = [('Israel', 'IL', 294640), ( "Sweden", 'SE', '2661886'), ('United States', 'US', 6252001)]
@@ -97,8 +94,14 @@ class  TestGeodis(unittest.TestCase):
             self.assertEqual(countries.getCountryNameById(cid), name)
             self.assertEqual(countries.getCountryCodeById(cid), code)
 
+    def testNameCodeConversionReversable(self):
+        transformed = [countries.getCountryNameByCode(countries.getCountryCodeByName(c)) for c in countries.countries.itervalues()]
+        self.assertEqual(countries.countries.values(), transformed)
+        transformed = [countries.getCountryCodeByName(countries.getCountryNameByCode(c)) for c in countries.countries.iterkeys()]
+        self.assertEqual(countries.countries.keys(), transformed)
+
 
 if __name__ == '__main__':
     
-    import sys;sys.argv = ['', 'TestGeodis.testCountryUtils']
+    import sys;sys.argv = ['', 'TestGeodis']
     unittest.main()

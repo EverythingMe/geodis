@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+# ISO 3166-1 codes (countries and not sub-divisions)
 countries = {
     "AD": "Andorra",
     "AE": "United Arab Emirates",
@@ -234,7 +235,7 @@ countries = {
     "TZ": "Tanzania",
     "UA": "Ukraine",
     "UG": "Uganda",
-    "UM": "United States",
+    #"UM": "United States", This is a subdivision of US (ISO 3166-2) shouldn't be here
     "US": "United States",
     "UY": "Uruguay",
     "UZ": "Uzbekistan",
