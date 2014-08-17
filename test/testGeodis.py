@@ -11,6 +11,10 @@ from geodis.iprange import IPRange
 from geodis.zipcode import ZIPCode
 from geodis import countries
 
+
+atdir = lambda *f: os.path.join(os.path.abspath(os.path.dirname(__file__)), *f)
+
+
 class  TestGeodis(unittest.TestCase):
     def setUp(self):
         self.redisHost = 'localhost'
@@ -19,20 +23,20 @@ class  TestGeodis(unittest.TestCase):
     
     def test1_ImportGeonames(self):
 
-        importer = GeonamesImporter('./data/locations.csv', self.redisHost, self.redisPort, self.redisDB)
+        importer = GeonamesImporter(atdir('data/locations.csv'), self.redisHost, self.redisPort, self.redisDB)
         self.assertTrue(importer.runImport() > 0, 'Could not import cities csv')
 
 
 
     def test2_ImportIP2Location(self):
 
-        importer = IP2LocationImporter('./data/ip2location.csv', self.redisHost, self.redisPort, self.redisDB)
+        importer = IP2LocationImporter(atdir('data/ip2location.csv'), self.redisHost, self.redisPort, self.redisDB)
         self.assertTrue(importer.runImport() > 0, 'Could not import ip ranges csv')
 
 
     def test3_ImportZIP(self):
 
-        importer = ZIPImporter('./data/zipcodes.csv', self.redisHost, self.redisPort, self.redisDB)
+        importer = ZIPImporter(atdir('data/zipcodes.csv'), self.redisHost, self.redisPort, self.redisDB)
         self.assertTrue(importer.runImport() > 0, 'Could not import zipcodes csv')
 
     def test4_resolve(self):
