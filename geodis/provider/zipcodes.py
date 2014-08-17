@@ -126,7 +126,7 @@ class ZIPImporter(Importer):
 
 
             except Exception, e:
-                logging.error("Could not import line #%d: %s, %s: %s" % (i+1, city, state, e))
+                logging.exception("Could not import line #%d: %s, %s: %s" % (i+1, city, state, e))
                 fails += 1
 #
             i += 1
