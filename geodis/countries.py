@@ -1054,7 +1054,7 @@ def getCountryCodeByName(name):
     """
     Get the ISO Country code of a country by its official name. *** CASE SENSITIVE ***
     """
-    return countryCodesByName.get(name)
+    return countryCodesByName.get(_str(name))
 
 def getCountryNameByCode(code):
     """
@@ -1066,7 +1066,7 @@ def getCountryIdByName(name):
     """
     Get the internal numeric country id by its name (case SENSITIVE)
     """
-    return countryIds.get(name)
+    return countryIds.get(_str(name))
 
 def getCountryIdByCode(code):
     """
@@ -1075,5 +1075,11 @@ def getCountryIdByCode(code):
     return getCountryIdByName(getCountryNameByCode(code))
 
 
+def _str(s):
+    """
+    Convert to utf-8 encoded string for every possible type
+    @param s: anything that can be converted to a string
+    @return:
+    """
 
-
+    return s.encode('utf-8', 'replace') if isinstance(s, unicode) else (str(s) if not isinstance(s, str) else s)
