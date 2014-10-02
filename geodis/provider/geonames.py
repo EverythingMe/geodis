@@ -31,6 +31,7 @@ csv.field_size_limit(sys.maxsize)
 import logging
 import redis
 import re
+import json
 
 from ..city import City
 from .importer import Importer
@@ -53,12 +54,14 @@ class GeonamesImporter(Importer):
         self.reset(City)
         
         pipe = self.redis.pipeline()
-        reader = csv.reader(fp, delimiter='\t', quotechar = '"')
+        #reader = csv.reader(fp, delimiter='\t', quotechar = '"')
         
         i = 0
         fails = 0
-        for row in reader:
+        for line in fp:
+
             try:
+		row = [x.encode('utf-8') for x in json.loads(line)]
                 loc = City (
                     continentId =   row[0],
                     continent =     row[1],
@@ -77,10 +80,11 @@ class GeonamesImporter(Importer):
                 loc.save(pipe)
                 
             except Exception, e:
-                logging.exception("Could not import line %s: %s" ,row, e)
+                logging.exception("Could not import line %s: %s" ,line, e)
                 fails+=1
                 return
-            
+       	
+	         
             i += 1
             if i % 1000 == 0:
                 pipe.execute()

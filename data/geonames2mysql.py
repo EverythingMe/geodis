@@ -10,6 +10,7 @@ import logging
 import time
 from optparse import OptionParser
 import re
+import json
 
 class Cols:
     geonameid =         0
@@ -119,6 +120,8 @@ class GeonamesLoader:
             if len(r)>2 and r[2]=='ADM':
                 self.hierarchy[r[1]] = r[0]
             
+
+    
     def load(self, allCountires, alternates, hierarchy):
 
         logging.info('Loading %s...' % alternates)
@@ -217,7 +220,7 @@ class GeonamesLoader:
                 record.insert(4, '0')
                 record.insert(5, '')
             
-            print '\t'.join(record)
+            print json.dumps(record, ensure_ascii=False)
             
         return True
 
