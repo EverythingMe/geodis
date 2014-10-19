@@ -9,7 +9,7 @@ But it is written in an extensible way, so that adding a new layer of objects an
 
 Geodis is fast, since it uses redis, which is a very fast in memory database, and geohashing to index coordinates.
 
-a single thread, signle process python program can resolve about 2000 ips and 3000 lat/lon pairs per second on
+A single thread, single process python program can resolve about 2000 ips and 3000 lat/lon pairs per second on
 a regular desktop machine, when the database is fully loaded with IP ranges, zipcodes and all major cities in the world.
 
 
