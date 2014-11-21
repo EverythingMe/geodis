@@ -60,12 +60,12 @@ http://redis.io
 
 http://github.com/andymccurdy/redis-py
 
-Install it with `easy_install redis`
+Install with `easy_install redis`
 
-optionally: run `easy_install hiredis` (binary module that accelerates stuff if it exists)
+Optionally: Install hiredis with `easy_install hiredis` (binary module that accelerates stuff if it exists)
 
 * geohasher
 
 A geohashing python module.
 
-Installed with `easy_install geohasher`
+Install with `easy_install geohasher`
