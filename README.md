@@ -1,16 +1,13 @@
 Geodis - a Redis based geo resolving library
 ------------------------------------------------------------------------
 
-Geodis is a simple and fast python module that allows you to convert IP addresses and latitude/longitude
-coordinates into geographical locations such as cities, zipcodes and countries.
+Geodis is a simple and fast python module that allows you to convert IP addresses and latitude/longitude coordinates into geographical locations such as cities, zipcodes and countries.
 
-It currently supports cities worldwide, and zipcode areas in the US (of course each of these includes higher level data such as country).
-But it is written in an extensible way, so that adding a new layer of objects and indexing them is very simple.
+It currently supports cities worldwide, and zipcode areas in the US (of course each of these includes higher level data such as country). But it is written in an extensible way, so that adding a new layer of objects and indexing them is very simple.
 
 Geodis is fast, since it uses redis, which as a very fast in memory database, and geohashing to index coordinates.
 
-a single thread, signle process python program can resolve about 2000 ips and 3000 lat/lon pairs per second on
-a regular desktop machine, when the database is fully loaded with IP ranges, zipcodes and all major cities in the world.
+A single threaded, single process python program can resolve about 2000 ips and 3000 lat/lon pairs per second on a regular desktop machine when the database is fully loaded with IP ranges, zipcodes and all major cities in the world.
 
 
 USAGE
