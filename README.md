@@ -11,54 +11,61 @@ A single threaded, single process python program can resolve about 2000 ips and 
 
 ## Usage
 
-    >>> import redis
-    >>> import geodis
-    >>> conn = redis.Redis()
+Initialization
+```
+>>> import redis
+>>> import geodis
+>>> conn = redis.Redis()
+```
 
-    #getting a city by lat,lon
-    >>> print geodis.City.getByLatLon(31.78,35.21, conn)
-    Location: {'name': 'West Jerusalem', 'country': 'Israel', 'lon': '35.21961', 'zipcode': '', 'state': 'Jerusalem District', 'lat': '31.78199'}
+Getting a city by lat,lon
+```
+>>> print geodis.City.getByLatLon(31.78,35.21, conn)
+Location: {'name': 'West Jerusalem', 'country': 'Israel', 'lon': '35.21961', 'zipcode': '', 'state': 'Jerusalem District', 'lat': '31.78199'}
+```
 
-    #getting a location by ip
-    >>> print geodis.IPRange.getCity('62.219.0.221', conn)
-    Location: {'name': 'West Jerusalem', 'country': 'Israel', 'lon': '35.21961', 'zipcode': '', 'state': 'Jerusalem District', 'lat': '31.78199'}
-
+Getting a location by ip
+```
+>>> print geodis.IPRange.getCity('62.219.0.221', conn)
+Location: {'name': 'West Jerusalem', 'country': 'Israel', 'lon': '35.21961', 'zipcode': '', 'state': 'Jerusalem District', 'lat': '31.78199'}
+```
 
 ## Use as a command line utility
 
-    $ ./geodis.py -p  188.127.241.156
-    Location: {'name': 'Crosby', 'country': 'United Kingdom', 'lon': '-3.03333', 'zipcode': '', 'state': 'England', 'key': 'loc:crosby:united kingdom:england:', 'lat': '53.47778'}
+```
+$ ./geodis.py -p  188.127.241.156
+Location: {'name': 'Crosby', 'country': 'United Kingdom', 'lon': '-3.03333', 'zipcode': '', 'state': 'England', 'key': 'loc:crosby:united kingdom:england:', 'lat': '53.47778'}
 
-    $ ./geodis.py -l  40.90732,-74.07514
-    Location: {'name': 'Rochelle Park', 'country': 'United States', 'lon': '-74.07514', 'zipcode': '', 'state': 'New Jersey', 'key': 'loc:rochelle park:united states:new jersey:', 'lat': '40.90732'}
+$ ./geodis.py -l  40.90732,-74.07514
+Location: {'name': 'Rochelle Park', 'country': 'United States', 'lon': '-74.07514', 'zipcode': '', 'state': 'New Jersey', 'key': 'loc:rochelle park:united states:new jersey:', 'lat': '40.90732'}
+```
 
 ## Importing Data
 
 Geodis needs to import its data into redis.
 In the data folder you will find a list of all cities in the world, and a zipcode database.
 
-    *IMPORTANT*: IP to location data is not provided, you need to buy an ip resolving database that can resolve ip ranges to lat,lon pairs
+*IMPORTANT*: IP to location data is not provided, you need to buy an ip resolving database that can resolve ip ranges to lat,lon pairs
 
-data is imported using a utility called geodis.py. run ./geodis.py --help for more details on importing it.
+Data is imported using a utility called geodis.py. run `./geodis.py --help` for more details on importing it.
 
 
 ## Requirements
 
 * redis-server
 
-    get it at http://redis.io
-
+http://redis.io
 
 * redis-py
 
-    http://github.com/andymccurdy/redis-py
+http://github.com/andymccurdy/redis-py
 
-    install it with *easy_install redis*
+Install it with `easy_install redis`
 
-    optionally: run easy_install hiredis (binary module that accelerates stuff if it exists)
+optionally: run `easy_install hiredis` (binary module that accelerates stuff if it exists)
 
 * geohasher
 
-    A geohashing python module.
+A geohashing python module.
 
-    can be installed with *easy_install geohasher*
+Installed with `easy_install geohasher`
