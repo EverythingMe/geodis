@@ -1,5 +1,4 @@
-Geodis - a Redis based geo resolving library
-------------------------------------------------------------------------
+# Geodis - a Redis based geo resolving library
 
 Geodis is a simple and fast python module that allows you to convert IP addresses and latitude/longitude coordinates into geographical locations such as cities, zipcodes and countries.
 
@@ -10,8 +9,8 @@ Geodis is fast, since it uses redis, which as a very fast in memory database, an
 A single threaded, single process python program can resolve about 2000 ips and 3000 lat/lon pairs per second on a regular desktop machine when the database is fully loaded with IP ranges, zipcodes and all major cities in the world.
 
 
-USAGE
-------------------------
+## Usage
+
     >>> import redis
     >>> import geodis
     >>> conn = redis.Redis()
@@ -25,16 +24,16 @@ USAGE
     Location: {'name': 'West Jerusalem', 'country': 'Israel', 'lon': '35.21961', 'zipcode': '', 'state': 'Jerusalem District', 'lat': '31.78199'}
 
 
-Geodis can also be used as a command line utility
-------------------------
+## Use as a command line utility
+
     $ ./geodis.py -p  188.127.241.156
     Location: {'name': 'Crosby', 'country': 'United Kingdom', 'lon': '-3.03333', 'zipcode': '', 'state': 'England', 'key': 'loc:crosby:united kingdom:england:', 'lat': '53.47778'}
 
     $ ./geodis.py -l  40.90732,-74.07514
     Location: {'name': 'Rochelle Park', 'country': 'United States', 'lon': '-74.07514', 'zipcode': '', 'state': 'New Jersey', 'key': 'loc:rochelle park:united states:new jersey:', 'lat': '40.90732'}
 
-IMPORTING DATA
-------------------------
+## Importing Data
+
 Geodis needs to import its data into redis.
 In the data folder you will find a list of all cities in the world, and a zipcode database.
 
@@ -43,8 +42,7 @@ In the data folder you will find a list of all cities in the world, and a zipcod
 data is imported using a utility called geodis.py. run ./geodis.py --help for more details on importing it.
 
 
-REUIREMENTS:
-------------------------
+## Requirements
 
 * redis-server
 
