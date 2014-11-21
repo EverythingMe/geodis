@@ -52,20 +52,13 @@ Data is imported using a utility called geodis.py. run `./geodis.py --help` for 
 
 ## Requirements
 
-* redis-server
+* redis-server - http://redis.io
 
-http://redis.io
+* redis-py - http://github.com/andymccurdy/redis-py
+`easy_install redis`
 
-* redis-py
+* hiredis - https://github.com/redis/hiredis (optional, can provide up to 10x speed in parsing responses from Redis server)
+`easy_install hiredis`
 
-http://github.com/andymccurdy/redis-py
-
-Install with `easy_install redis`
-
-Optionally: Install hiredis with `easy_install hiredis` (binary module that accelerates stuff if it exists)
-
-* geohasher
-
-A geohashing python module.
-
-Install with `easy_install geohasher`
+* geohasher - A geohashing python module.
+`easy_install geohasher`
