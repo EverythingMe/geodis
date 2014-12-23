@@ -1550,18 +1550,18 @@ def getCountryCodeById(id):
     return getCountryCodeByName(getCountryNameById(id))
 
 
-def getIdBy3LetterCountryCode(code):
+def getIdBy3LetterCode(code):
     """
     Get the id by ISO 3166 alpha 3 country code *** CASE INSENSITIVE ***
     """
-    return threeLetterCodesToId.get(str(code).upper())
+    return threeLetterCodesToId.get(code.upper())
 
 
-def get2LetterCountryCodeBy3LetterCountryCode(code):
+def get2LetterCodeBy3LetterCode(code):
     """
     Get the 2 letter country code by ISO 3166 alpha 3 country code *** CASE INSENSITIVE ***
     """
-    return threeLetterCodesToTwoLetterCode.get(str(code).upper())
+    return threeLetterCodesToTwoLetterCode.get(code.upper())
 
 
 def getCountryCodeByName(name):
