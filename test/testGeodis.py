@@ -18,22 +18,22 @@ atdir = lambda *f: os.path.join(os.path.abspath(os.path.dirname(__file__)), *f)
 class  TestGeodis(unittest.TestCase):
     def setUp(self):
         self.redisHost = 'localhost'
-        self.redisPort = 6379
+        self.redisPort = 6375
         self.redisDB = 8
     
     def test1_ImportGeonames(self):
 
-        importer = GeonamesImporter(atdir('data/locations.csv'), self.redisHost, self.redisPort, self.redisDB)
-        self.assertTrue(importer.runImport() > 0, 'Could not import cities csv')
+        importer = GeonamesImporter(atdir('data/cities.json'), self.redisHost, self.redisPort, self.redisDB)
+        self.assertTrue(importer.runImport() > 0, 'Could not import cities json')
 
-
-
+    #
+    #
     def test2_ImportIP2Location(self):
 
         importer = IP2LocationImporter(atdir('data/ip2location.csv'), self.redisHost, self.redisPort, self.redisDB)
         self.assertTrue(importer.runImport() > 0, 'Could not import ip ranges csv')
 
-
+    #
     def test3_ImportZIP(self):
 
         importer = ZIPImporter(atdir('data/zipcodes.csv'), self.redisHost, self.redisPort, self.redisDB)
@@ -55,9 +55,9 @@ class  TestGeodis(unittest.TestCase):
         locs = City.getByName('springfield', r, 44.0462, -123.022, 'united states')
 
         self.assertTrue(len(locs)>0)
-        self.assertTrue(locs[0].country == 'United States')
-        self.assertTrue(locs[0].name == 'Springfield')
-        self.assertTrue(locs[0].state == 'Oregon')
+        self.assertEqual(locs[0].country, 'United States')
+        self.assertEqual(locs[0].name, 'Springfield')
+        self.assertEqual(locs[0].state, 'Missouri')
 
 
         #resolve by ip
