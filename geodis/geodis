@@ -41,7 +41,6 @@ from geodis.zipcode import ZIPCode
 
 from geodis import us_states
 
-import us_states
 
 __author__="dvirsky"
 __date__ ="$Mar 25, 2011 4:44:22 PM$"
@@ -173,6 +172,7 @@ if __name__ == "__main__":
     elif options.resolve_latlon:
         coords = [float(p) for p in options.resolve_latlon.split(',')]
         resolveCoords(*coords)
+    else:
+        parser.print_help()
 
-    print "Success!"
     sys.exit(0)
