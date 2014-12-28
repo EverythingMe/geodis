@@ -70,6 +70,12 @@ Examples:
 
 ** *IMPORTANT*: IP to location data is not provided, you need to buy an ip resolving database that can resolve ip ranges to lat,lon pairs **
 
+Refreshing countries mapping:
+------------------------
+The data is already generated but if you ever need to update, use:
+
+        python external/geonames/update.py > geodis/countries.py
+
 
 INSTALLING:
 ------------------------
