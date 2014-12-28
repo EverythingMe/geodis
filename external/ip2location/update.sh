@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -x
 MONTH=$(date +%m)
 REDIS_HOST="127.0.0.1"
 REDIS_DB=8
@@ -18,7 +18,7 @@ for i; do
 done
 
 die() {
-	echo $1 >/dev/stderr
+	echo $1 >&2
 	exit 2
 }
 
@@ -38,7 +38,6 @@ verify_zip() {
 
 [ -n "$LOGIN" ] || usage
 [ -n "$PASSWORD" ] || usage
-[ -n "$USER" ] || usage
 [ -n "$PKG" ] || usage
 
 [ -z "$TEMP" ] && TEMP=/tmp
@@ -49,13 +48,12 @@ depends_on perl
 # redis and python are kind of obvious, so no point in checking.
 
 mkdir -p $TMPDIR
-rm "$TMPDIR/*"
 cd $(dirname $0)
 ./download.pl -package $PKG -login $LOGIN -password $PASSWORD -output "$TMPDIR/$PKG-$MONTH.zip" || \
 	die "Failed to download, quitting"
 verify_zip "$TMPDIR/$PKG-$MONTH.zip"
 unzip -u -o -d $TMPDIR "$TMPDIR/$PKG-$MONTH.zip" 'IP*.CSV' || die "Failed to download, quitting"
 
-PKG_FILE="$TMPDIR/IP*.CSV"
-cd ../../src/
-./geodis.py -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
+PKG_FILE="$TMPDIR/IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE.CSV"
+cd ../..
+./geodis/geodis -i -f $PKG_FILE -n "$REDIS_DB" -H "$REDIS_HOST" -p "$REDIS_PORT" || die "Update failed, your database is empty"
