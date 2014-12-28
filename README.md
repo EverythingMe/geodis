@@ -1,16 +1,18 @@
-Geodis - a Redis based geo resolving library
-------------------------------------------------------------------------
+# Geodis - a Redis based geo resolving library
 
-### Note to geodis users: this version of Geodis from December 28, 2014, includes a lot of updates and fixes. Namely:
 
-> 1. Fixes to data importing avoiding places that did not get imported in previous version.
+* * *
+
+##  Note to geodis users: this version of Geodis from December 28, 2014, includes a lot of updates and fixes. Namely:
+
+#### 1. Fixes to data importing avoiding places that did not get imported in previous version.
  
-> 2. The ability to convert country ISO codes to names and vice versa.
+#### 2. The ability to convert country ISO codes to names and vice versa.
 
-> 3. Geodis is now installable from pip
+#### 3. Geodis is now installable from pip
 
 
-------------------------------------------------------------------------
+* * * * * *
 
 Geodis is a simple and fast python module that allows you to convert IP addresses and latitude/longitude
 coordinates into geographical locations such as cities, zipcodes and countries.
