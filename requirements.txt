@@ -1,1 +1,2 @@
 redis
+geohasher==0.1dev
