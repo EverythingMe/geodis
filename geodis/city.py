@@ -24,7 +24,6 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Do@.
 
-from .countries import countries
 from .location import Location
 from .index import TextIndex, GeoboxIndex, GeoBoxTextIndex
 from .us_states import State
@@ -54,7 +53,7 @@ class City(Location):
         super(City, self).__init__(**kwargs)
         
         self.continent = kwargs.get('continent', '').strip()
-        self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()        
+        self.country = kwargs.get('country','').strip()
         self.state = kwargs.get('state', '').strip()
         
         self.continentId = kwargs.get('continentId', 0)
