@@ -53,7 +53,7 @@ IMPORTING DATA
 ------------------------
 Geodis needs to import its data into redis. In the data folder you will find a list of all cities in the world, and a zipcode database.
 
-The data files should be where the geodis files are installed if you've installed from pip (e.g `/usr/local/lib/python2.7/site-packages/data/cities1000.json`), or in the source tree if you've cloned this repo.
+The data files should be where the geodis files are installed if you've installed from pip (e.g `/usr/local/lib/python2.7/site-packages/geodis/data/cities1000.json`), or in the source tree if you've cloned this repo.
 
 data is imported using a utility called geodis.py. run ./geodis.py --help for more details on importing it.
 
