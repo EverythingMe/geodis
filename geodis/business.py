@@ -30,7 +30,7 @@ import itertools
 
 from geohasher import hasher
 
-from .countries import countries
+from . import countries
 from .location import Location
 from .index import GeoBoxTextIndex, GeoboxIndex, TimeSampler
 from .us_states import State
@@ -51,7 +51,11 @@ class Business(Location):
         super(Business, self).__init__(**kwargs)
         
         self.continent = kwargs.get('continent', '').strip()
-        self.country = countries.get( kwargs.get('country', None), kwargs.get('country', '')).strip()        
+        try:
+            self.country = countries.getNameBy2LetterCode(kwargs.get('country', None))
+        except KeyError:
+            self.country = kwargs.get('country', '').strip()
+
         self.state = kwargs.get('state', '').strip()
         self.city = kwargs.get('city', '').strip() 
         

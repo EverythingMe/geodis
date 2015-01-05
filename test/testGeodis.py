@@ -90,19 +90,21 @@ class  TestGeodis(unittest.TestCase):
 
         for name, code, cid in testData:
 
-            self.assertEqual(countries.getCountryCodeByName(name), code)
-            self.assertEqual(countries.getCountryNameByCode(code), name)
-            self.assertEqual(countries.getCountryIdByName(name), int(cid))
-            self.assertEqual(countries.getCountryIdByCode(code), int(cid))
+            self.assertEqual(countries.get2LetterCodeByName(name), code)
+            self.assertEqual(countries.getNameBy2LetterCode(code), name)
+            self.assertEqual(countries.getIdByName(name), int(cid))
+            self.assertEqual(countries.getIdBy2LetterCode(code), int(cid))
 
-            self.assertEqual(countries.getCountryNameById(cid), name)
-            self.assertEqual(countries.getCountryCodeById(cid), code)
+            self.assertEqual(countries.getNameById(cid), name)
+            self.assertEqual(countries.get2LetterCodeById(cid), code)
 
     def testNameCodeConversionReversable(self):
-        transformed = [countries.getCountryNameByCode(countries.getCountryCodeByName(c)) for c in countries.countries.itervalues()]
-        self.assertEqual(countries.countries.values(), transformed)
-        transformed = [countries.getCountryCodeByName(countries.getCountryNameByCode(c)) for c in countries.countries.iterkeys()]
-        self.assertEqual(countries.countries.keys(), transformed)
+        countryNames = [c.name for c in countries.countries]
+        countryCodes = [c.ISO for c in countries.countries]
+        transformed = [countries.getNameBy2LetterCode(countries.get2LetterCodeByName(c)) for c in countryNames]
+        self.assertEqual(countryNames, transformed)
+        transformed = [countries.get2LetterCodeByName(countries.getNameBy2LetterCode(c)) for c in countryCodes]
+        self.assertEqual(countryCodes, transformed)
 
 
 if __name__ == '__main__':

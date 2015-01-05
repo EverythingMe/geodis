@@ -261,17 +261,17 @@ countriesById = {c.id: c for c in countries}
 
 def get2LetterCodeById(id):
     """Get country 2LetterCode by Id"""
-    return countriesById[id].ISO
+    return countriesById[int(id)].ISO
 
 
 def get3LetterCodeById(id):
     """Get country 3LetterCode by Id"""
-    return countriesById[id].ISO3
+    return countriesById[int(id)].ISO3
 
 
 def getNameById(id):
     """Get country Name by Id"""
-    return countriesById[id].name
+    return countriesById[int(id)].name
 
 
 countriesByName = {c.name: c for c in countries}
