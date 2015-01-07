@@ -46,12 +46,19 @@ class TestGeodis(unittest.TestCase):
         self.assertIn(loc.state, ('CA', 'California'))
 
     def test5_resolve_by_textual_search(self):
-        locs = City.getByName('springfield', self.redis, 44.0462, -123.022, 'united states')
+        locs = City.getByName('san francisco', self.redis, 44.0462, -123.022, 'united states')
 
         self.assertGreater(len(locs), 0)
         self.assertEqual(locs[0].country, 'United States')
-        self.assertEqual(locs[0].name, 'Springfield')
-        self.assertEqual(locs[0].state, 'Missouri')
+        self.assertEqual(locs[0].name, 'San Francisco')
+        self.assertEqual(locs[0].state, 'California')
+
+        locs = City.getByName('san francisco', self.redis)
+
+        self.assertGreater(len(locs), 0)
+        self.assertEqual(locs[0].country, 'United States')
+        self.assertEqual(locs[0].name, 'San Francisco')
+        self.assertEqual(locs[0].state, 'California')
 
     def test6_resolve_by_ip(self):
         loc = IPRange.getCity('4.3.68.1', self.redis)
