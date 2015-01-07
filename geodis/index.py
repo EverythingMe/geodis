@@ -257,7 +257,7 @@ class GeoBoxTextIndex(AbstractIndex):
         if not text:
             
             ids = self.geoIndex.getIds(redisConn, lat, lon, radius, False)
-            nodes = filter(lambda c: c and Location.getLatLonDistance((lat, lon), c[1]) <= radius, ids)
+            #nodes = filter(lambda c: c and Location.getLatLonDistance((lat, lon), c[1]) <= radius, ids)
             return [id[0] for id in ids]
         else:
             

@@ -60,6 +60,39 @@ class TestGeodis(unittest.TestCase):
         self.assertEqual(locs[0].name, 'San Francisco')
         self.assertEqual(locs[0].state, 'California')
 
+    def test_city(self):
+
+        self.assertTrue(City.exist(['san francisco'], self.redis))
+        self.assertFalse(City.exist(['ban hranbisco'], self.redis))
+
+        locs = City.getByName('san francisco', self.redis)
+        self.assertEquals(1, len(locs))
+        city = locs[0]
+
+        score1 = city.score(37.7833, -122.4167)
+        self.assertGreater(score1, 0)
+
+        # we need a second instance of the city to get a different score because scores are cached
+        city2 = City.getByName('san francisco', self.redis)[0]
+        score2 = city2.score(38.7833, -102.4167)
+        self.assertGreater(score2, 0)
+        self.assertGreater(score1, score2)
+
+
+        #test converting to country only info
+        city.toCountry()
+        for k in City.__cityspec__:
+            self.assertEquals(getattr(city,k), None)
+
+
+        #test get by radius
+        locs = City.getByRadius(37.7833, -122.4167, 4, self.redis, None, 5)
+        self.assertEqual(5, len(locs))
+        self.assertEqual(locs[0].name, 'San Francisco')
+
+
+
+
     def test6_resolve_by_ip(self):
         loc = IPRange.getCity('4.3.68.1', self.redis)
 
