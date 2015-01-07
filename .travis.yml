@@ -1,0 +1,16 @@
+before_install:
+  - pip install -r test/requirements.txt
+
+language: python
+python:
+  - 2.7
+services:
+  - redis-server
+env: TEST_REDIS_PORT=6379
+
+install:
+  - python setup.py install
+
+script:
+  - nosetests --with-coverage --cover-package=geodis
+
