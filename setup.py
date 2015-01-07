@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='geodis',
-    version='2.0.7',
+    version='2.0.8',
     author='DoAT Media LTD.',
     author_email='dvirsky@gmail.com',
     url='https://github.com/doat/geodis',
