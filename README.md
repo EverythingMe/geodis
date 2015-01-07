@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/doat/geodis.svg?branch=master)](https://travis-ci.org/doat/geodis)
+[![Build Status](https://travis-ci.org/EverythingMe/geodis.svg?branch=master)](https://travis-ci.org/EverythingMe/geodis)
 
 # Geodis - a Redis based geo resolving library
 
