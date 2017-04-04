@@ -51,6 +51,6 @@ for attr in _attrs:
     for other in others:
         print
         print
-        print '''def get{other[0]}By{attr[0]}({attr[1]}):
+        print '''def getCountry{other[0]}By{attr[0]}({attr[1]}):
     """Get country {other[0]} by {attr[0]}"""
     return {lookup}[{attr[1]}].{other[1]}'''.format(other=other, attr=attr, lookup=lookup)

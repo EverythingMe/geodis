@@ -259,17 +259,17 @@ countries = [
 countriesById = {c.id: c for c in countries}
 
 
-def get2LetterCodeById(id):
+def getCountry2LetterCodeById(id):
     """Get country 2LetterCode by Id"""
     return countriesById[int(id)].ISO
 
 
-def get3LetterCodeById(id):
+def getCountry3LetterCodeById(id):
     """Get country 3LetterCode by Id"""
     return countriesById[int(id)].ISO3
 
 
-def getNameById(id):
+def getCountryNameById(id):
     """Get country Name by Id"""
     return countriesById[int(id)].name
 
@@ -277,17 +277,17 @@ def getNameById(id):
 countriesByName = {c.name: c for c in countries}
 
 
-def get2LetterCodeByName(name):
+def getCountry2LetterCodeByName(name):
     """Get country 2LetterCode by Name"""
     return countriesByName[name].ISO
 
 
-def get3LetterCodeByName(name):
+def getCountry3LetterCodeByName(name):
     """Get country 3LetterCode by Name"""
     return countriesByName[name].ISO3
 
 
-def getIdByName(name):
+def getCountryIdByName(name):
     """Get country Id by Name"""
     return countriesByName[name].id
 
@@ -295,17 +295,17 @@ def getIdByName(name):
 countriesBy2LetterCode = {c.ISO: c for c in countries}
 
 
-def get3LetterCodeBy2LetterCode(ISO):
+def getCountry3LetterCodeBy2LetterCode(ISO):
     """Get country 3LetterCode by 2LetterCode"""
     return countriesBy2LetterCode[ISO].ISO3
 
 
-def getIdBy2LetterCode(ISO):
+def getCountryIdBy2LetterCode(ISO):
     """Get country Id by 2LetterCode"""
     return countriesBy2LetterCode[ISO].id
 
 
-def getNameBy2LetterCode(ISO):
+def getCountryNameBy2LetterCode(ISO):
     """Get country Name by 2LetterCode"""
     return countriesBy2LetterCode[ISO].name
 
@@ -313,16 +313,16 @@ def getNameBy2LetterCode(ISO):
 countriesBy3LetterCode = {c.ISO3: c for c in countries}
 
 
-def get2LetterCodeBy3LetterCode(ISO3):
+def getCountry2LetterCodeBy3LetterCode(ISO3):
     """Get country 2LetterCode by 3LetterCode"""
     return countriesBy3LetterCode[ISO3].ISO
 
 
-def getIdBy3LetterCode(ISO3):
+def getCountryIdBy3LetterCode(ISO3):
     """Get country Id by 3LetterCode"""
     return countriesBy3LetterCode[ISO3].id
 
 
-def getNameBy3LetterCode(ISO3):
+def getCountryNameBy3LetterCode(ISO3):
     """Get country Name by 3LetterCode"""
     return countriesBy3LetterCode[ISO3].name
