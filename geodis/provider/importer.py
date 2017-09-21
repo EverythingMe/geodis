@@ -30,9 +30,10 @@ class Importer(object):
     """
     Base class for all importer scripts, inits a redis connection and file name
     """
-    def __init__(self, fileName ,redisHost, redisPort, redisDB):
+    def __init__(self, fileName, redisHost, redisPort, redisDB, redisPWD=None):
         self.fileName = fileName
-        self.redis = redis.Redis(host = redisHost, port = redisPort, db = redisDB)
+        self.redis = redis.Redis(host=redisHost, port=redisPort, db=redisDB, password=redisPWD)
+
         
     def reset(self, cls):
         self.redis.delete(cls.getGeohashIndexKey())
