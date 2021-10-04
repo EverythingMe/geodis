@@ -54,7 +54,7 @@ def importGeonames(fileName):
     global redis_host, redis_port, redis_db
     importer = GeonamesImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport():
-        print "Could not import geonames database..."
+        print("Could not import geonames database...")
         sys.exit(1)
 
 
@@ -63,7 +63,7 @@ def importBusinesses(fileName):
     global redis_host, redis_port, redis_db
     importer = BusinessImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport():
-        print "Could not import business database..."
+        print("Could not import business database...")
         sys.exit(1)
 
 
@@ -72,7 +72,7 @@ def importIP2Location(fileName):
     global redis_host, redis_port, redis_db
     importer = IP2LocationImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport(True):
-        print "Could not import geonames database..."
+        print("Could not import geonames database...")
         sys.exit(1)
 
 
@@ -81,7 +81,7 @@ def importZIPCode(fileName):
     global redis_host, redis_port, redis_db
     importer = ZIPImporter(fileName, redis_host, redis_port, redis_db)
     if not importer.runImport():
-        print "Could not import geonames database..."
+        print("Could not import geonames database...")
         sys.exit(1)
 
     
@@ -90,14 +90,14 @@ def resolveIP(ip):
     r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
 
     loc = IPRange.getCity(ip, r)
-    print loc
+    print(loc)
     
 
 def resolveCoords(lat, lon):
     global redis_host, redis_port, redis_db
     r = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
     loc = City.getByLatLon(lat, lon, r)
-    print loc
+    print(loc)
 
 
 if __name__ == "__main__":

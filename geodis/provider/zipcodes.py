@@ -80,7 +80,7 @@ class ZIPImporter(Importer):
                 state['cities'][city['name']] = city['cityId']
 
 
-        print features.keys()
+        print(features.keys())
         pipe = self.redis.pipeline()
         i = 0
         fails = 0

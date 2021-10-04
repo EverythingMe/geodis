@@ -96,10 +96,10 @@ class BusinessImporter(Importer):
             
             i += 1
             if i % 1000 == 0:
-                print i
+                print(i)
                 pipe.execute()
         pipe.execute()
 
         logging.info("Imported %d businesses, failed %d times" , i, fails)
-        print "Finished!"
+        print("Finished!")
         return True

@@ -50,10 +50,10 @@ class IP2LocationImporter(Importer):
             return False
         
         if reset:
-            print "Deleting old ip data..."
+            print("Deleting old ip data...")
             self.redis.delete(IPRange._indexKey)
 
-        print "Starting import..."
+        print("Starting import...")
             
         reader = csv.reader(fp, delimiter=',', quotechar='"')
         pipe = self.redis.pipeline()

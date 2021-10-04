@@ -124,7 +124,6 @@ State.buildIndex()
 
 
 if __name__ == '__main__':
-    
-    print State.get('CA')
+    print(State.get('CA'))
     
     

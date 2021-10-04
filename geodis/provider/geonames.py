@@ -91,5 +91,5 @@ class GeonamesImporter(Importer):
         pipe.execute()
 
         logging.info("Imported %d cities, failed %d times" , i, fails)
-        print "Finished!"
+        print("Finished!")
         return True
