@@ -112,10 +112,10 @@ if __name__ == '__main__':
     nodes = Business.getByRadius(lat, lon, 10, r, 'mcdonalds')
     #nodes.sort(lambda x,y: cmp(y.score(lat, lon), x.score(lat, lon)))
     et = time.time()
-    print len(nodes)
+    print(len(nodes))
     for n in nodes:
-        print n.name, ',', n.address, Location.getLatLonDistance((lat, lon), (n.lat, n.lon)), "km"
-    print 1000*(et-st)
+        print(n.name, ',', n.address, Location.getLatLonDistance((lat, lon), (n.lat, n.lon)), "km")
+    print(1000*(et-st))
 #    for city in cities:
 #        print city.name, city.country, Location.getLatLonDistance((lat, lon), (city.lat, city.lon))
     #import redis

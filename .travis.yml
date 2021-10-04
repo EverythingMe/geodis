@@ -3,7 +3,7 @@ before_install:
 
 language: python
 python:
-  - 2.7
+  - 3.6
 services:
   - redis-server
 env: TEST_REDIS_PORT=6379

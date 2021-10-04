@@ -144,7 +144,7 @@ class GeonamesLoader:
                     (r[Cols.feature_code]!='TERR' or int(r[Cols.gtopo3])>=0):
                 
                 if fc == 'TERR' and r[Cols.country_code] == 'AU':
-                    print r
+                    print(r)
                     continue
 
                 ft = featureCodes[fc]
@@ -220,7 +220,7 @@ class GeonamesLoader:
                 record.insert(4, '0')
                 record.insert(5, '')
             
-            print json.dumps(record, ensure_ascii=False)
+            print(json.dumps(record, ensure_ascii=False))
             
         return True
 
